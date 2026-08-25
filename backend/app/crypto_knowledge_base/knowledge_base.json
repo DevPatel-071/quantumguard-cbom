@@ -1,0 +1,461 @@
+{
+  "version": "1.0.0",
+  "updated_at": "2026-08-24",
+  "algorithms": {
+    "RSA": {
+      "name": "RSA (Rivest-Shamir-Adleman)",
+      "category": "Asymmetric Cryptography",
+      "uses": ["Digital Signature", "Key Establishment", "Public-Key Encryption"],
+      "common_key_sizes": [1024, 2048, 3072, 4096],
+      "common_libraries": ["OpenSSL", "BoringSSL", "Python cryptography", "PyCryptodome", "Java JCA/JCE", "Node.js crypto", "Bouncy Castle", "libsignal"],
+      "common_apis": [
+        "RSA_generate_key_ex", "RSA_sign", "RSA_verify", "RSA_public_encrypt", "RSA_private_decrypt",
+        "rsa.generate_private_key", "PKCS1_OAEP.new", "PKCS1_v1_5.new", "KeyPairGenerator.getInstance(\"RSA\")",
+        "crypto.createSign(\"RSA-SHA256\")", "crypto.generateKeyPairSync(\"rsa\")", "rsa.GenerateKey"
+      ],
+      "quantum_vulnerability": "CRITICAL",
+      "quantum_attack": "Shor's Algorithm (Polynomial-time prime factorization using quantum Fourier transform)",
+      "quantum_impact_description": "A Cryptographically Relevant Quantum Computer (CRQC) running Shor's algorithm can factor n=p*q in O((log n)^3) quantum operations, completely breaking RSA private key recovery and signature forgery.",
+      "security_status": "Vulnerable to CRQC. Harvest-Now-Decrypt-Later (HNDL) risk for encrypted data.",
+      "recommended_pqc_alternatives": {
+        "Digital Signature": "ML-DSA-65 (FIPS 204) or SLH-DSA-SHA2-128s (FIPS 205)",
+        "Key Establishment": "ML-KEM-768 (FIPS 203)",
+        "Public-Key Encryption": "ML-KEM-768 (FIPS 203) with hybrid envelope"
+      },
+      "hybrid_alternatives": {
+        "Digital Signature": "Hybrid Composite Dual Signature (RSA-2048/3072 + ML-DSA-65)",
+        "Key Establishment": "Hybrid KEM (RSA-OAEP-3072 + ML-KEM-768)"
+      },
+      "performance_considerations": "PQC signatures (ML-DSA) feature faster signing and verification than RSA-4096, but produce larger public keys (~1,312 bytes) and signatures (~2,420 bytes).",
+      "compatibility_considerations": "Legacy TLS and X.509 cert chains may need packet fragmentation adjustments or dual-cert support during transition."
+    },
+    "ECC": {
+      "name": "Elliptic Curve Cryptography (Generic / ECDSA / ECDH)",
+      "category": "Asymmetric Cryptography",
+      "uses": ["Digital Signature", "Key Agreement (ECDH)", "Authentication"],
+      "common_key_sizes": [256, 384, 521],
+      "common_libraries": ["OpenSSL", "libsodium", "Python cryptography", "PyCryptodome", "Java JCA", "Node.js crypto", "Go crypto/elliptic"],
+      "common_apis": [
+        "ECDSA_sign", "ECDSA_verify", "ECDH_compute_key", "ec.generate_private_key", "ECC.generate",
+        "KeyPairGenerator.getInstance(\"EC\")", "crypto.createECDH", "elliptic.P256()"
+      ],
+      "quantum_vulnerability": "CRITICAL",
+      "quantum_attack": "Shor's Algorithm for Discrete Logarithms over Elliptic Curve Groups (ECDLP)",
+      "quantum_impact_description": "Shor's algorithm solves discrete log on elliptic curves in O(log^3 N) operations, requiring only ~2,330 logical qubits to break 256-bit ECC.",
+      "security_status": "Vulnerable to CRQC. Immediate HNDL threat for ECDH session keys.",
+      "recommended_pqc_alternatives": {
+        "Digital Signature": "ML-DSA-65 (FIPS 204)",
+        "Key Agreement": "ML-KEM-768 (FIPS 203)"
+      },
+      "hybrid_alternatives": {
+        "Digital Signature": "Hybrid ECDSA (P-256) + ML-DSA-44/65",
+        "Key Agreement": "Hybrid ECDH (X25519 / P-256) + ML-KEM-768 (X25519Kyber768)"
+      },
+      "performance_considerations": "ML-KEM and ML-DSA provide 5x-10x faster computational throughput than ECC, though public keys and ciphertexts are larger (ML-KEM-768 ciphertext is 1,088 bytes vs 64 bytes for ECDH).",
+      "compatibility_considerations": "Requires supporting larger frame sizes in network protocols and APIs."
+    },
+    "ECDSA": {
+      "name": "ECDSA (Elliptic Curve Digital Signature Algorithm)",
+      "category": "Asymmetric Cryptography",
+      "uses": ["Digital Signature", "Code Signing", "PKI / X.509"],
+      "common_key_sizes": [256, 384, 521],
+      "common_libraries": ["OpenSSL", "Python cryptography", "Java Signature", "Node.js crypto", "Go crypto/ecdsa"],
+      "common_apis": ["ECDSA_sign", "ECDSA_verify", "ec.ECDSA", "Signature.getInstance(\"SHA256withECDSA\")", "crypto.createSign(\"SHA256\")"],
+      "quantum_vulnerability": "CRITICAL",
+      "quantum_attack": "Shor's Algorithm (Elliptic Curve Discrete Logarithm Problem)",
+      "quantum_impact_description": "CRQC allows forging valid signatures by recovering private keys from public keys and known signatures.",
+      "security_status": "Vulnerable to CRQC. High urgency for long-lived code signing certificates and identity roots.",
+      "recommended_pqc_alternatives": {
+        "Digital Signature": "ML-DSA-65 (FIPS 204) [Primary General Purpose] or SLH-DSA-128s (FIPS 205) [Stateful/Stateless Hash-based for Root CAs]"
+      },
+      "hybrid_alternatives": {
+        "Digital Signature": "Hybrid Composite Dual Signature (ECDSA P-256 + ML-DSA-65)"
+      },
+      "performance_considerations": "Verification is very fast in ML-DSA. SLH-DSA has higher CPU verification overhead but ultra-conservative hash-only security assumptions.",
+      "compatibility_considerations": "X.509 RFC 9758 and RFC 9759 for composite signatures."
+    },
+    "ECDH": {
+      "name": "ECDH (Elliptic Curve Diffie-Hellman)",
+      "category": "Asymmetric Cryptography",
+      "uses": ["Key Agreement", "Session Key Exchange", "Forward Secrecy"],
+      "common_key_sizes": [256, 384, 521],
+      "common_libraries": ["OpenSSL", "BoringSSL", "Python cryptography", "Node.js crypto", "Go crypto/ecdh"],
+      "common_apis": ["ECDH_compute_key", "ec.ECDH", "KeyAgreement.getInstance(\"ECDH\")", "crypto.createECDH"],
+      "quantum_vulnerability": "CRITICAL",
+      "quantum_attack": "Shor's Algorithm on Diffie-Hellman Discrete Logarithm",
+      "quantum_impact_description": "Adversaries can record TLS/VPN encrypted traffic today and decrypt it once a quantum computer is available (Harvest Now, Decrypt Later).",
+      "security_status": "Immediate HNDL risk for sensitive, high-longevity data.",
+      "recommended_pqc_alternatives": {
+        "Key Agreement": "ML-KEM-768 (FIPS 203)"
+      },
+      "hybrid_alternatives": {
+        "Key Agreement": "X25519 + ML-KEM-768 (Hybrid KEX standard deployed in OpenSSH, Chrome, and Cloudflare)"
+      },
+      "performance_considerations": "Extremely fast encapsulation/decapsulation (< 0.1 ms). Adds ~1 KB to TLS ClientHello/ServerHello.",
+      "compatibility_considerations": "TLS 1.3 draft extensions and OpenSSH 9.0+ natively support X25519MLKEM768."
+    },
+    "Diffie-Hellman": {
+      "name": "Diffie-Hellman (DH / FFDH)",
+      "category": "Asymmetric Cryptography",
+      "uses": ["Key Agreement", "Session Key Exchange"],
+      "common_key_sizes": [1024, 2048, 3072, 4096],
+      "common_libraries": ["OpenSSL", "Python cryptography", "Java KeyAgreement"],
+      "common_apis": ["DH_generate_key", "DH_compute_key", "dh.generate_parameters", "KeyAgreement.getInstance(\"DH\")"],
+      "quantum_vulnerability": "CRITICAL",
+      "quantum_attack": "Shor's Algorithm (Finite Field Discrete Logarithm Problem)",
+      "quantum_impact_description": "CRQC solves finite field DLP in polynomial time, breaking shared secret derivation.",
+      "security_status": "Critical vulnerability to HNDL. Finite field DH is also computationally slower than modern options.",
+      "recommended_pqc_alternatives": {
+        "Key Agreement": "ML-KEM-768 (FIPS 203)"
+      },
+      "hybrid_alternatives": {
+        "Key Agreement": "Hybrid FFDHE-3072 + ML-KEM-768 or X25519 + ML-KEM-768"
+      },
+      "performance_considerations": "ML-KEM is 100x faster than FFDH-3072 and uses smaller key sizes.",
+      "compatibility_considerations": "Transition directly to X25519+ML-KEM-768 hybrid."
+    },
+    "Ed25519": {
+      "name": "Ed25519 (Edwards-curve Digital Signature Algorithm over Curve25519)",
+      "category": "Asymmetric Cryptography",
+      "uses": ["Digital Signature", "SSH Authentication", "TLS", "Code Signing"],
+      "common_key_sizes": [256],
+      "common_libraries": ["libsodium", "OpenSSL", "Python cryptography", "Go crypto/ed25519", "Rust ed25519-dalek"],
+      "common_apis": ["crypto_sign_ed25519", "ed25519.Ed25519PrivateKey", "ed25519.GenerateKey", "Ed25519Signer"],
+      "quantum_vulnerability": "CRITICAL",
+      "quantum_attack": "Shor's Algorithm for Edwards Curves",
+      "quantum_impact_description": "Curve25519 has 128-bit classical security, broken by Shor's algorithm with ~2,000 logical qubits.",
+      "security_status": "Vulnerable to CRQC. Must be migrated for long-term authentication and signatures.",
+      "recommended_pqc_alternatives": {
+        "Digital Signature": "ML-DSA-65 (FIPS 204) or SLH-DSA-128f (FIPS 205)"
+      },
+      "hybrid_alternatives": {
+        "Digital Signature": "Hybrid Ed25519 + ML-DSA-65"
+      },
+      "performance_considerations": "ML-DSA provides comparable high-speed verification.",
+      "compatibility_considerations": "OpenSSH supports hybrid ssh-ed25519-mldsa65."
+    },
+    "Ed448": {
+      "name": "Ed448 (Edwards-curve Digital Signature Algorithm over Curve448)",
+      "category": "Asymmetric Cryptography",
+      "uses": ["Digital Signature", "High-Security PKI"],
+      "common_key_sizes": [448],
+      "common_libraries": ["OpenSSL", "Python cryptography"],
+      "common_apis": ["ed448.Ed448PrivateKey", "crypto_sign_ed448"],
+      "quantum_vulnerability": "CRITICAL",
+      "quantum_attack": "Shor's Algorithm",
+      "quantum_impact_description": "Vulnerable to polynomial-time discrete log on quantum computers.",
+      "security_status": "Vulnerable to CRQC.",
+      "recommended_pqc_alternatives": {
+        "Digital Signature": "ML-DSA-87 (FIPS 204, NIST Level 5)"
+      },
+      "hybrid_alternatives": {
+        "Digital Signature": "Hybrid Ed448 + ML-DSA-87"
+      },
+      "performance_considerations": "ML-DSA-87 delivers NIST Level 5 security with fast verification.",
+      "compatibility_considerations": "Standardized in NIST FIPS 204."
+    },
+    "X25519": {
+      "name": "X25519 (ECDH Key Exchange over Curve25519)",
+      "category": "Asymmetric Cryptography",
+      "uses": ["Key Agreement", "TLS 1.3 Key Share", "WireGuard", "Signal Protocol"],
+      "common_key_sizes": [256],
+      "common_libraries": ["libsodium", "OpenSSL", "Python cryptography", "Go crypto/ecdh"],
+      "common_apis": ["x25519.X25519PrivateKey", "crypto_scalarmult_curve25519", "ecdh.X25519()"],
+      "quantum_vulnerability": "CRITICAL",
+      "quantum_attack": "Shor's Algorithm (HNDL attack threat)",
+      "quantum_impact_description": "Recorded session handshakes can be broken retroactively by a CRQC.",
+      "security_status": "Vulnerable to CRQC. Highest priority for HNDL mitigation.",
+      "recommended_pqc_alternatives": {
+        "Key Agreement": "ML-KEM-768 (FIPS 203)"
+      },
+      "hybrid_alternatives": {
+        "Key Agreement": "Hybrid X25519 + ML-KEM-768 (X25519Kyber768 / X25519MLKEM768)"
+      },
+      "performance_considerations": "Hybrid combination adds only ~1,100 bytes and under 0.2ms overhead.",
+      "compatibility_considerations": "Active industry standard in Chromium, Apple iOS 18+, Cloudflare, and OpenSSH."
+    },
+    "AES": {
+      "name": "AES (Advanced Encryption Standard)",
+      "category": "Symmetric Cryptography",
+      "uses": ["Bulk Encryption", "Data at Rest", "Data in Transit", "Storage Encryption"],
+      "common_key_sizes": [128, 192, 256],
+      "common_libraries": ["OpenSSL", "Python cryptography", "PyCryptodome", "Java Cipher", "Node.js crypto", "Go crypto/aes"],
+      "common_apis": [
+        "EVP_aes_256_gcm", "EVP_aes_128_gcm", "EVP_EncryptInit_ex", "AES.new", "Cipher.getInstance(\"AES/GCM/NoPadding\")",
+        "crypto.createCipheriv(\"aes-256-gcm\")", "aes.NewCipher"
+      ],
+      "quantum_vulnerability": "LOW_TO_MEDIUM",
+      "quantum_attack": "Grover's Algorithm (Quantum search reduces effective key strength by square root: O(2^(k/2)))",
+      "quantum_impact_description": "Grover's algorithm halves effective bit security. AES-128 offers 64-bit quantum security (marginal for top-secret/long-life data). AES-256 offers 128-bit quantum security, which remains computationally infeasible to break for the foreseeable future.",
+      "security_status": "AES-256 is QUANTUM-RESISTANT. AES-128 should be upgraded to AES-256 for long-lifetime classified data.",
+      "recommended_pqc_alternatives": {
+        "Bulk Encryption": "Upgrade AES-128 to AES-256-GCM (No PQC algorithm required for symmetric bulk encryption)"
+      },
+      "hybrid_alternatives": {
+        "Bulk Encryption": "AES-256-GCM / ChaCha20-Poly1305 with PQC-encapsulated symmetric keys (ML-KEM-768)"
+      },
+      "performance_considerations": "Hardware AES-NI provides > 10 GB/s throughput. Negligible overhead switching 128 to 256 bit.",
+      "compatibility_considerations": "Broad universal hardware and software support."
+    },
+    "3DES": {
+      "name": "3DES (Triple Data Encryption Standard / Triple-DES)",
+      "category": "Symmetric Cryptography",
+      "uses": ["Legacy Bulk Encryption", "Legacy Payment Hardware (EMV)"],
+      "common_key_sizes": [112, 168],
+      "common_libraries": ["OpenSSL", "Python cryptography", "Java Cipher", "PyCryptodome"],
+      "common_apis": ["EVP_des_ede3_cbc", "DES3.new", "Cipher.getInstance(\"DESede/CBC/PKCS5Padding\")"],
+      "quantum_vulnerability": "CRITICAL",
+      "quantum_attack": "Grover's Algorithm + Classical Sweet32 64-bit block collision",
+      "quantum_impact_description": "Classically deprecated by NIST (SP 800-131A). Grover reduces effective security of 112-bit 3DES to 56 bits, well within quantum breakability.",
+      "security_status": "Deprecated & Insecure. Immediate classical and quantum replacement required.",
+      "recommended_pqc_alternatives": {
+        "Bulk Encryption": "AES-256-GCM"
+      },
+      "hybrid_alternatives": {
+        "Bulk Encryption": "Migrate directly to AES-256-GCM"
+      },
+      "performance_considerations": "AES-256 is 10x-50x faster due to hardware acceleration.",
+      "compatibility_considerations": "Must update legacy hardware and banking data formats."
+    },
+    "DES": {
+      "name": "DES (Data Encryption Standard)",
+      "category": "Symmetric Cryptography",
+      "uses": ["Obsolete Encryption"],
+      "common_key_sizes": [56],
+      "common_libraries": ["OpenSSL", "PyCryptodome", "Java Cipher"],
+      "common_apis": ["EVP_des_cbc", "DES.new", "Cipher.getInstance(\"DES\")"],
+      "quantum_vulnerability": "CRITICAL",
+      "quantum_attack": "Trivially broken classically (56-bit exhaustive search) and Grover reduction to 28 bits.",
+      "quantum_impact_description": "Completely broken.",
+      "security_status": "Obsolete / Highly Insecure.",
+      "recommended_pqc_alternatives": {
+        "Bulk Encryption": "AES-256-GCM"
+      },
+      "hybrid_alternatives": {
+        "Bulk Encryption": "Direct migration to AES-256-GCM"
+      },
+      "performance_considerations": "Immediate upgrade.",
+      "compatibility_considerations": "Remove all DES dependencies."
+    },
+    "ChaCha20": {
+      "name": "ChaCha20 / ChaCha20-Poly1305",
+      "category": "Symmetric Cryptography",
+      "uses": ["Stream Cipher", "Authenticated Bulk Encryption", "Mobile/TLS"],
+      "common_key_sizes": [256],
+      "common_libraries": ["libsodium", "OpenSSL", "Python cryptography", "Go golang.org/x/crypto/chacha20poly1305"],
+      "common_apis": ["crypto_aead_chacha20poly1305_ietf_encrypt", "ChaCha20Poly1305", "EVP_chacha20_poly1305"],
+      "quantum_vulnerability": "LOW",
+      "quantum_attack": "Grover's Algorithm (256-bit key -> 128-bit quantum security)",
+      "quantum_impact_description": "128 bits of post-quantum security remains unbreakable.",
+      "security_status": "QUANTUM-RESISTANT.",
+      "recommended_pqc_alternatives": {
+        "Bulk Encryption": "Maintain ChaCha20-Poly1305 (Combine with ML-KEM for key exchange)"
+      },
+      "hybrid_alternatives": {
+        "Bulk Encryption": "ChaCha20-Poly1305 with ML-KEM-768 derived symmetric keys"
+      },
+      "performance_considerations": "High performance in software without dedicated hardware AES instructions.",
+      "compatibility_considerations": "Standard in TLS 1.3 and WireGuard."
+    },
+    "SHA-1": {
+      "name": "SHA-1 (Secure Hash Algorithm 1)",
+      "category": "Cryptographic Hash Function",
+      "uses": ["Legacy Integrity", "Git commits", "Legacy Certificates"],
+      "common_key_sizes": [160],
+      "common_libraries": ["OpenSSL", "Python hashlib", "Java MessageDigest", "Node.js crypto"],
+      "common_apis": ["EVP_sha1", "hashlib.sha1", "MessageDigest.getInstance(\"SHA-1\")", "crypto.createHash(\"sha1\")"],
+      "quantum_vulnerability": "CRITICAL",
+      "quantum_attack": "Brassard-Høyer-Tapp (BHT) Quantum Collision Finding + SHAttered Classical Collision",
+      "quantum_impact_description": "Classically broken collisions (SHAttered, 2017). Quantum BHT algorithm finds collisions in O(2^(n/3)) = O(2^53) operations.",
+      "security_status": "Insecure classically and quantumly.",
+      "recommended_pqc_alternatives": {
+        "Hashing": "SHA-256, SHA-384, SHA-512, or SHA3-256"
+      },
+      "hybrid_alternatives": {
+        "Hashing": "Migrate to SHA-384 or SHA-512"
+      },
+      "performance_considerations": "SHA-256 and SHA-512 offer high performance on 64-bit systems.",
+      "compatibility_considerations": "Replace all SHA-1 signature algorithms and HMACs."
+    },
+    "MD5": {
+      "name": "MD5 (Message Digest 5)",
+      "category": "Cryptographic Hash Function",
+      "uses": ["Obsolete Checksums", "Legacy HMAC"],
+      "common_key_sizes": [128],
+      "common_libraries": ["OpenSSL", "Python hashlib", "Java MessageDigest", "Node.js crypto"],
+      "common_apis": ["EVP_md5", "hashlib.md5", "MessageDigest.getInstance(\"MD5\")", "crypto.createHash(\"md5\")"],
+      "quantum_vulnerability": "CRITICAL",
+      "quantum_attack": "Trivially broken classically and quantumly.",
+      "quantum_impact_description": "Completely vulnerable to collision and preimage attacks.",
+      "security_status": "Obsolete / Highly Insecure.",
+      "recommended_pqc_alternatives": {
+        "Hashing": "SHA-256 or SHA3-256"
+      },
+      "hybrid_alternatives": {
+        "Hashing": "Direct migration to SHA-256 / SHA-512"
+      },
+      "performance_considerations": "Immediate remediation.",
+      "compatibility_considerations": "Deprecate entirely."
+    },
+    "SHA-256": {
+      "name": "SHA-256 (Secure Hash Algorithm 256-bit)",
+      "category": "Cryptographic Hash Function",
+      "uses": ["Integrity", "HMAC", "Digital Signatures", "Blockchain", "TLS"],
+      "common_key_sizes": [256],
+      "common_libraries": ["OpenSSL", "Python hashlib", "Java MessageDigest", "Node.js crypto", "Go crypto/sha256"],
+      "common_apis": ["EVP_sha256", "hashlib.sha256", "MessageDigest.getInstance(\"SHA-256\")", "crypto.createHash(\"sha256\")", "sha256.Sum256"],
+      "quantum_vulnerability": "LOW",
+      "quantum_attack": "BHT Algorithm (Quantum collision: O(2^(256/3)) = ~2^85 operations; Grover Preimage: 2^128 operations)",
+      "quantum_impact_description": "Quantum collision resistance is ~85-128 bits, safe for standard commercial applications. For top-tier NSA CNSA 2.0 security, SHA-384/512 is recommended.",
+      "security_status": "QUANTUM-RESISTANT for standard applications.",
+      "recommended_pqc_alternatives": {
+        "Hashing": "Maintain SHA-256 or upgrade to SHA-384 / SHA-512 for CNSA 2.0 compliance"
+      },
+      "hybrid_alternatives": {
+        "Hashing": "SHA-256 + SHA3-256 dual hashing if desired"
+      },
+      "performance_considerations": "Hardware acceleration available (Intel SHA extensions, ARMv8 Crypto).",
+      "compatibility_considerations": "Universal support across all platforms."
+    },
+    "SHA-384": {
+      "name": "SHA-384",
+      "category": "Cryptographic Hash Function",
+      "uses": ["CNSA 2.0 Compliance", "High-Security Integrity", "TLS 1.3"],
+      "common_key_sizes": [384],
+      "common_libraries": ["OpenSSL", "Python hashlib", "Java MessageDigest", "Node.js crypto"],
+      "common_apis": ["EVP_sha384", "hashlib.sha384", "MessageDigest.getInstance(\"SHA-384\")", "crypto.createHash(\"sha384\")"],
+      "quantum_vulnerability": "VERY_LOW",
+      "quantum_attack": "BHT Algorithm (Quantum collision: O(2^128))",
+      "quantum_impact_description": "Provides full 128-bit quantum collision resistance and 192-bit preimage resistance.",
+      "security_status": "QUANTUM-RESISTANT (Approved by NSA CNSA 2.0).",
+      "recommended_pqc_alternatives": {
+        "Hashing": "Meets all Post-Quantum Requirements (NIST & NSA CNSA 2.0 compliant)"
+      },
+      "hybrid_alternatives": {
+        "Hashing": "Native PQC Hash Function"
+      },
+      "performance_considerations": "Fast on 64-bit architectures.",
+      "compatibility_considerations": "Fully supported standard."
+    },
+    "SHA-512": {
+      "name": "SHA-512",
+      "category": "Cryptographic Hash Function",
+      "uses": ["High-Security Integrity", "Key Derivation", "PQC Primitives"],
+      "common_key_sizes": [512],
+      "common_libraries": ["OpenSSL", "Python hashlib", "Java MessageDigest", "Node.js crypto"],
+      "common_apis": ["EVP_sha512", "hashlib.sha512", "MessageDigest.getInstance(\"SHA-512\")", "crypto.createHash(\"sha512\")"],
+      "quantum_vulnerability": "VERY_LOW",
+      "quantum_attack": "Quantum collision security >= 170 bits; Grover preimage 256 bits.",
+      "quantum_impact_description": "Exceeds all post-quantum security requirements.",
+      "security_status": "QUANTUM-RESISTANT.",
+      "recommended_pqc_alternatives": {
+        "Hashing": "Fully Post-Quantum Ready"
+      },
+      "hybrid_alternatives": {
+        "Hashing": "Native PQC Hash"
+      },
+      "performance_considerations": "Optimal for 64-bit CPUs.",
+      "compatibility_considerations": "Universally available."
+    },
+    "TLS": {
+      "name": "TLS (Transport Layer Security Protocol)",
+      "category": "Cryptographic Protocol",
+      "uses": ["Network Transport Encryption", "API Security", "HTTPS"],
+      "common_key_sizes": [128, 256],
+      "common_libraries": ["OpenSSL", "BoringSSL", "rustls", "Go crypto/tls", "Java JSSE", "SChannel"],
+      "common_apis": ["SSL_CTX_new", "tls.Config", "SSLContext.getInstance(\"TLS\")", "https.createServer"],
+      "quantum_vulnerability": "HIGH",
+      "quantum_attack": "HNDL attack on classical Ephemeral Key Exchange (ECDHE/DHE)",
+      "quantum_impact_description": "Network traffic captured today can be stored and decrypted when quantum computers arrive.",
+      "security_status": "TLS 1.2/1.3 with classical KEX is vulnerable to HNDL. Must adopt Hybrid PQC KEX.",
+      "recommended_pqc_alternatives": {
+        "Protocol": "TLS 1.3 with Hybrid ML-KEM-768 Key Exchange (X25519Kyber768 / X25519MLKEM768) and ML-DSA-65 certificate chains"
+      },
+      "hybrid_alternatives": {
+        "Protocol": "Hybrid TLS 1.3: Classical ECDH (X25519) + PQC KEM (ML-KEM-768)"
+      },
+      "performance_considerations": "Minimal latency delta (~1-2% increase in handshake size).",
+      "compatibility_considerations": "Supported in BoringSSL, OpenSSL 3.2+ with oqsprovider, and Cloudflare/Google networks."
+    },
+    "SSH": {
+      "name": "SSH (Secure Shell Protocol)",
+      "category": "Cryptographic Protocol",
+      "uses": ["Remote Administration", "Automated DevOps", "SFTP"],
+      "common_key_sizes": [256, 384, 2048, 4096],
+      "common_libraries": ["OpenSSH", "libssh", "paramiko", "golang.org/x/crypto/ssh"],
+      "common_apis": ["ssh_connect", "paramiko.SSHClient", "ssh.ClientConfig"],
+      "quantum_vulnerability": "HIGH",
+      "quantum_attack": "HNDL on SSH session key exchange and quantum forgery of SSH host/user keys.",
+      "quantum_impact_description": "Encrypted remote sessions captured over public networks can be decrypted in the future.",
+      "security_status": "OpenSSH 9.0+ defaults to sntrup761x25519-sha512 hybrid KEX; OpenSSH 9.9+ integrates ML-KEM.",
+      "recommended_pqc_alternatives": {
+        "Protocol": "SSH-2 with mlkem768x25519-sha512 key exchange and ssh-mldsa65 authentication keys"
+      },
+      "hybrid_alternatives": {
+        "Protocol": "Hybrid sntrup761x25519-sha512 or mlkem768x25519-sha512"
+      },
+      "performance_considerations": "Negligible impact on interactive terminal latency.",
+      "compatibility_considerations": "Requires OpenSSH 9.0+ or compatible clients/servers."
+    },
+    "ML-KEM": {
+      "name": "ML-KEM (Module-Lattice-Based Key-Encapsulation Mechanism, FIPS 203 / CRYSTALS-Kyber)",
+      "category": "Post-Quantum Cryptography (NIST Standard)",
+      "uses": ["Key Establishment", "Public-Key Encryption (via KEM Envelope)", "Session Key Derivation"],
+      "common_key_sizes": [512, 768, 1024],
+      "common_libraries": ["liboqs", "BoringSSL", "OpenSSL oqsprovider", "pqcrypto", "kyber-py", "circl"],
+      "common_apis": ["pqc_kem_keypair", "ML_KEM_768_encapsulate", "ML_KEM_768_decapsulate", "kyber768.generate_keypair"],
+      "quantum_vulnerability": "QUANTUM_RESISTANT",
+      "quantum_attack": "Hardness based on the Module Learning With Errors (M-LWE) lattice problem, resistant to known classical and quantum algorithms.",
+      "quantum_impact_description": "NIST primary standard for post-quantum key encapsulation (FIPS 203 approved August 2024).",
+      "security_status": "OFFICIALLY STANDARDIZED NIST PQC REPLACEMENT (FIPS 203).",
+      "recommended_pqc_alternatives": {
+        "Target": "Primary post-quantum key establishment standard (ML-KEM-768 corresponds to NIST Security Level 3)."
+      },
+      "hybrid_alternatives": {
+        "Target": "X25519 + ML-KEM-768 for transitional defense-in-depth."
+      },
+      "performance_considerations": "Extremely fast keygen, encapsulation, and decapsulation (< 50 microseconds). Public key: 1,184 bytes; Ciphertext: 1,088 bytes.",
+      "compatibility_considerations": "IETF RFC draft standardization for TLS 1.3, IKEv2, and SSH."
+    },
+    "ML-DSA": {
+      "name": "ML-DSA (Module-Lattice-Based Digital Signature Algorithm, FIPS 204 / CRYSTALS-Dilithium)",
+      "category": "Post-Quantum Cryptography (NIST Standard)",
+      "uses": ["Digital Signature", "PKI Certificates", "Code Signing", "Authentication"],
+      "common_key_sizes": [44, 65, 87],
+      "common_libraries": ["liboqs", "BoringSSL", "OpenSSL oqsprovider", "pqcrypto", "circl"],
+      "common_apis": ["pqc_sign_keypair", "ML_DSA_65_sign", "ML_DSA_65_verify"],
+      "quantum_vulnerability": "QUANTUM_RESISTANT",
+      "quantum_attack": "Hardness based on Module Short Integer Solution (M-SIS) and M-LWE lattice problems.",
+      "quantum_impact_description": "NIST primary standard for general-purpose post-quantum digital signatures (FIPS 204 approved August 2024).",
+      "security_status": "OFFICIALLY STANDARDIZED NIST PQC REPLACEMENT (FIPS 204).",
+      "recommended_pqc_alternatives": {
+        "Target": "Primary general-purpose post-quantum digital signature standard."
+      },
+      "hybrid_alternatives": {
+        "Target": "Composite dual-signatures (e.g. ECDSA P-256 + ML-DSA-65)."
+      },
+      "performance_considerations": "Very fast signing and verification. Public key: 1,952 bytes; Signature: 3,309 bytes.",
+      "compatibility_considerations": "Requires updating certificate profile sizes in X.509 chains."
+    },
+    "SLH-DSA": {
+      "name": "SLH-DSA (Stateless Hash-Based Digital Signature Algorithm, FIPS 205 / SPHINCS+)",
+      "category": "Post-Quantum Cryptography (NIST Standard)",
+      "uses": ["Root CA Certificates", "Firmware Signing", "Long-Term Archival Signatures"],
+      "common_key_sizes": [128, 192, 256],
+      "common_libraries": ["liboqs", "OpenSSL oqsprovider", "pqcrypto"],
+      "common_apis": ["pqc_sphincs_sign", "SLH_DSA_SHA2_128s_sign"],
+      "quantum_vulnerability": "QUANTUM_RESISTANT",
+      "quantum_attack": "Security relies strictly on standard cryptographic hash functions (SHA-2, SHAKE), avoiding algebraic lattice assumptions.",
+      "quantum_impact_description": "Ultra-conservative backup signature standard with minimal theoretical risk (FIPS 205 approved August 2024).",
+      "security_status": "OFFICIALLY STANDARDIZED NIST PQC BACKUP STANDARD (FIPS 205).",
+      "recommended_pqc_alternatives": {
+        "Target": "Ideal for Root CAs, firmware signing, and environments requiring zero algebraic structure."
+      },
+      "hybrid_alternatives": {
+        "Target": "RSA-4096 + SLH-DSA-128s composite root."
+      },
+      "performance_considerations": "Signatures are larger (~7.8 KB to 49 KB) and signing is slower than ML-DSA, but relies only on secure hash properties.",
+      "compatibility_considerations": "Best suited for infrequent signing (e.g., firmware releases, root CAs)."
+    }
+  }
+}
