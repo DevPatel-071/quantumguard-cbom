@@ -15,6 +15,9 @@ from app.mosca.mosca_engine import mosca_engine
 from app.risk_engine.quantum_risk_engine import quantum_risk_engine
 from app.recommendation_engine.pqc_recommender import pqc_recommender
 from app.prioritization.priority_engine import priority_engine
+from app.roadmap.roadmap_engine import roadmap_engine
+from app.readiness.readiness_engine import readiness_engine
+from app.cost_estimator.cost_engine import cost_engine
 
 class CBOMGenerator:
 
@@ -56,9 +59,9 @@ class CBOMGenerator:
                 is_confidentiality_sensitive=is_confidential
             )
 
-            # 2. Risk Calculation
+            # 2. Risk Calculation & Explainable Factor Breakdown
             conf = item.get("confidence", ConfidenceLevel.CONFIRMED_USAGE)
-            risk_score, risk_lvl, rationales = quantum_risk_engine.calculate_risk(
+            risk_score, risk_lvl, rationales, factor_scores, risk_explanation, recommended_action = quantum_risk_engine.calculate_risk(
                 algorithm=algo,
                 key_size=item.get("key_size"),
                 usage=item.get("usage", "Cryptographic Operation"),
@@ -108,6 +111,9 @@ class CBOMGenerator:
                 risk_score=risk_score,
                 risk_level=risk_lvl,
                 risk_factors=rationales,
+                risk_factor_breakdown=factor_scores,
+                risk_explanation=risk_explanation,
+                recommended_action=recommended_action,
                 mosca=mosca,
                 recommended_pqc=pqc,
                 hybrid_alternative=hybrid,
@@ -119,7 +125,10 @@ class CBOMGenerator:
         # 4. Prioritize Assets
         prioritized_assets = priority_engine.prioritize_assets(assets)
 
-        # 5. Build Aggregated Metrics
+        # 5. Classify Migration Roadmap Phases & Enrich Assets
+        enriched_assets, roadmap_rep = roadmap_engine.generate_roadmap(prioritized_assets)
+
+        # 6. Build Aggregated Metrics
         algo_counts: Dict[str, int] = {}
         risk_dist = {"LOW": 0, "MEDIUM": 0, "HIGH": 0, "CRITICAL": 0}
         conf_dist = {
@@ -133,8 +142,7 @@ class CBOMGenerator:
         mosca_urgent_count = 0
         total_risk_score = 0.0
 
-        for a in prioritized_assets:
-            # Main algorithm family grouping
+        for a in enriched_assets:
             main_algo = a.algorithm.split()[0].split("-")[0].replace("(", "").strip().upper()
             algo_counts[main_algo] = algo_counts.get(main_algo, 0) + 1
 
@@ -154,7 +162,7 @@ class CBOMGenerator:
 
             total_risk_score += a.risk_score
 
-        avg_risk = round(total_risk_score / len(prioritized_assets), 1) if prioritized_assets else 0.0
+        avg_risk = round(total_risk_score / len(enriched_assets), 1) if enriched_assets else 0.0
 
         summary = ScanSummary(
             scan_id=f"SCAN-{uuid.uuid4().hex[:8].upper()}",
@@ -162,7 +170,7 @@ class CBOMGenerator:
             target_name=target_name,
             files_scanned=files_scanned_count,
             libraries_detected=len(unique_libraries),
-            crypto_assets_count=len(prioritized_assets),
+            crypto_assets_count=len(enriched_assets),
             algorithm_counts=algo_counts,
             risk_distribution=risk_dist,
             confidence_distribution=conf_dist,
@@ -174,12 +182,21 @@ class CBOMGenerator:
             average_risk_score=avg_risk
         )
 
+        # 7. Evaluate Organization Quantum Readiness Score (0-100)
+        readiness_assessment = readiness_engine.evaluate_readiness(enriched_assets, summary)
+
+        # 8. Calculate Financial & Effort Summary
+        cost_summary = cost_engine.calculate_portfolio_cost(enriched_assets)
+
         return CBOMReport(
             cbom_version="1.0.0",
             cyclonedx_spec_version="1.6",
             generated_at=datetime.now(timezone.utc).isoformat(),
             scan_summary=summary,
-            assets=prioritized_assets,
+            assets=enriched_assets,
+            readiness_assessment=readiness_assessment,
+            roadmap_report=roadmap_rep,
+            cost_summary=cost_summary,
             metadata={
                 "target_name": target_name,
                 "application": application,

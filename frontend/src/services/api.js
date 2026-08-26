@@ -102,6 +102,29 @@ export async function simulateMosca(payload) {
   return res.json();
 }
 
+export async function fetchLatencyImpact(classicalAlgo, targetPqc) {
+  const res = await fetch(`${BASE_URL}/latency-impact`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      classical_algorithm: classicalAlgo,
+      target_pqc_or_hybrid: targetPqc
+    })
+  });
+  if (!res.ok) throw new Error('Failed to simulate latency impact');
+  return res.json();
+}
+
+export async function simulateCostEstimate(payload) {
+  const res = await fetch(`${BASE_URL}/cost-estimate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Cost calculation failed');
+  return res.json();
+}
+
 export async function fetchKnowledgeBase(query = '') {
   const url = query ? `${BASE_URL}/kb?query=${encodeURIComponent(query)}` : `${BASE_URL}/kb`;
   const res = await fetch(url);
@@ -161,6 +184,40 @@ export async function downloadHtmlReport(cbomReport) {
   const a = document.createElement('a');
   a.href = url;
   a.download = `audit_report_${cbomReport.scan_summary.scan_id || 'export'}.html`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+export async function downloadMigrationPlanHtml(cbomReport) {
+  const res = await fetch(`${BASE_URL}/export/migration-plan/html`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cbomReport)
+  });
+  if (!res.ok) throw new Error('Export Migration Plan HTML failed');
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `migration_plan_${cbomReport.scan_summary.scan_id || 'export'}.html`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+export async function downloadMigrationPlanJson(cbomReport) {
+  const res = await fetch(`${BASE_URL}/export/migration-plan/json`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cbomReport)
+  });
+  if (!res.ok) throw new Error('Export Migration Plan JSON failed');
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `migration_plan_${cbomReport.scan_summary.scan_id || 'export'}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();

@@ -5,7 +5,9 @@ import AssetDetailDrawer from './components/AssetDetailDrawer';
 import Dashboard from './pages/Dashboard';
 import ScanStudio from './pages/ScanStudio';
 import CBOMInventory from './pages/CBOMInventory';
-import MoscaLab from './pages/MoscaLab';
+import MigrationRoadmap from './pages/MigrationRoadmap';
+import QuantumReadiness from './pages/QuantumReadiness';
+import SimulatorsLab from './pages/SimulatorsLab';
 import Recommendations from './pages/Recommendations';
 import KnowledgeBaseExplorer from './pages/KnowledgeBaseExplorer';
 import Reports from './pages/Reports';
@@ -56,6 +58,7 @@ export default function App() {
           onSelectTab={setActiveTab}
           assetCount={cbomReport?.assets?.length || 0}
           urgentCount={cbomReport?.scan_summary?.mosca_urgent_count || 0}
+          readinessScore={cbomReport?.readiness_assessment?.overall_score ?? null}
         />
 
         {/* Center Content View */}
@@ -64,7 +67,7 @@ export default function App() {
             <div className="h-full flex flex-col items-center justify-center p-12 space-y-4">
               <Loader2 className="w-8 h-8 animate-spin text-sky-400" />
               <p className="text-xs text-slate-400 font-mono">
-                Initializing Post-Quantum Discovery Engine & Mounting Banking Core Sample...
+                Initializing Post-Quantum Migration Decision Core & Scanning Demo Suite...
               </p>
             </div>
           ) : (
@@ -90,11 +93,24 @@ export default function App() {
                 />
               )}
 
-              {activeTab === 'mosca' && (
-                <MoscaLab
+              {activeTab === 'roadmap' && (
+                <MigrationRoadmap
+                  cbomReport={cbomReport}
+                  onSelectAsset={setSelectedAsset}
+                />
+              )}
+
+              {activeTab === 'readiness' && (
+                <QuantumReadiness
+                  cbomReport={cbomReport}
+                  onNavigateToRoadmap={() => setActiveTab('roadmap')}
+                />
+              )}
+
+              {activeTab === 'simulators' && (
+                <SimulatorsLab
                   cbomReport={cbomReport}
                   onUpdateCBOM={handleUpdateCBOM}
-                  onSelectAsset={setSelectedAsset}
                 />
               )}
 

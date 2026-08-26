@@ -3,45 +3,87 @@ import {
   LayoutDashboard, 
   Scan, 
   Layers, 
-  Sliders, 
-  Compass, 
+  ShieldAlert, 
+  Activity, 
   BookOpen, 
   FileText,
-  ShieldAlert,
-  Binary
+  Clock,
+  Compass,
+  Gauge,
+  Sliders,
+  DollarSign
 } from 'lucide-react';
 
-export default function Sidebar({ activeTab, onSelectTab, assetCount, urgentCount }) {
+export default function Sidebar({ activeTab, onSelectTab, assetCount = 0, urgentCount = 0, readinessScore = null }) {
   const navItems = [
-    { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard },
-    { id: 'scan', label: 'Scan Studio', icon: Scan },
-    { 
-      id: 'cbom', 
-      label: 'CBOM Inventory', 
-      icon: Layers, 
-      badge: assetCount > 0 ? assetCount : null,
-      badgeColor: 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
+    {
+      id: 'dashboard',
+      label: 'Executive Dashboard',
+      icon: LayoutDashboard,
+      badge: null
     },
-    { 
-      id: 'mosca', 
-      label: 'Mosca Lab (X+Y>Z)', 
+    {
+      id: 'scan',
+      label: 'Discovery Scanner',
+      icon: Scan,
+      badge: null
+    },
+    {
+      id: 'cbom',
+      label: 'CBOM Inventory',
+      icon: Layers,
+      badge: assetCount > 0 ? `${assetCount}` : null
+    },
+    {
+      id: 'roadmap',
+      label: 'Migration Roadmap',
+      icon: Compass,
+      badge: '4-Phase',
+      badgeColor: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'
+    },
+    {
+      id: 'readiness',
+      label: 'Quantum Readiness',
+      icon: Gauge,
+      badge: readinessScore !== null ? `${readinessScore}/100` : null,
+      badgeColor: readinessScore >= 75 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+    },
+    {
+      id: 'simulators',
+      label: 'Simulators & Lab',
       icon: Sliders,
-      badge: urgentCount > 0 ? `${urgentCount} Urgent` : null,
-      badgeColor: 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+      badge: 'Latency / HNDL / Cost'
     },
-    { id: 'recommendations', label: 'PQC & Hybrid Roadmap', icon: Compass },
-    { id: 'knowledge-base', label: 'Crypto Knowledge Base', icon: BookOpen },
-    { id: 'reports', label: 'Audit & Reports', icon: FileText },
+    {
+      id: 'recommendations',
+      label: 'PQC & Hybrid Specs',
+      icon: ShieldAlert,
+      badge: 'FIPS 203/204'
+    },
+    {
+      id: 'knowledge-base',
+      label: 'Crypto Knowledge Base',
+      icon: BookOpen,
+      badge: '30+ Alg'
+    },
+    {
+      id: 'reports',
+      label: 'Audit & Migration Reports',
+      icon: FileText,
+      badge: null
+    }
   ];
 
   return (
-    <aside className="w-64 border-r border-slate-800/80 bg-[#0F172A]/70 backdrop-blur-md flex flex-col justify-between p-4 flex-shrink-0">
+    <aside className="w-64 bg-slate-950/80 border-r border-slate-800/80 flex flex-col justify-between p-3.5 select-none z-20 backdrop-blur-md">
       <div className="space-y-6">
-        <div className="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
-          Navigation & Analytics
+        <div className="px-3 pt-2">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">
+            Navigation & Decision Core
+          </div>
         </div>
 
-        <nav className="space-y-1.5">
+        <nav className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -49,18 +91,20 @@ export default function Sidebar({ activeTab, onSelectTab, assetCount, urgentCoun
               <button
                 key={item.id}
                 onClick={() => onSelectTab(item.id)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
                   isActive
-                    ? 'bg-gradient-to-r from-sky-500/20 to-indigo-500/10 text-sky-300 border border-sky-500/40 shadow-sm shadow-sky-500/10'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30 shadow-sm shadow-sky-500/10'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <Icon className={`w-4 h-4 ${isActive ? 'text-sky-400' : 'text-slate-400'}`} />
-                  <span>{item.label}</span>
+                  <span className="truncate">{item.label}</span>
                 </div>
                 {item.badge && (
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.badgeColor}`}>
+                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold font-mono border ${
+                    item.badgeColor || 'bg-slate-900 text-slate-300 border-slate-700'
+                  }`}>
                     {item.badge}
                   </span>
                 )}
@@ -70,19 +114,14 @@ export default function Sidebar({ activeTab, onSelectTab, assetCount, urgentCoun
         </nav>
       </div>
 
-      {/* Bottom PQC Compliance Info Box */}
-      <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs space-y-2">
-        <div className="flex items-center gap-2 text-purple-400 font-bold">
-          <Binary className="w-3.5 h-3.5" />
-          <span>NIST PQC Ready</span>
+      <div className="p-3 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800/80 space-y-2">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[11px] font-bold text-slate-200">NIST PQC Finalized</span>
         </div>
-        <p className="text-[11px] text-slate-400 leading-relaxed">
-          Standardized algorithms: ML-KEM (FIPS 203), ML-DSA (FIPS 204), SLH-DSA (FIPS 205).
+        <p className="text-[10px] text-slate-400 leading-relaxed">
+          FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), and FIPS 205 (SLH-DSA) active standards engine.
         </p>
-        <div className="pt-2 border-t border-slate-800 text-[10px] text-slate-500 flex justify-between items-center font-mono">
-          <span>Q-CBOM v1.0</span>
-          <span className="text-emerald-400">ENGINE LIVE</span>
-        </div>
       </div>
     </aside>
   );

@@ -13,14 +13,24 @@ from app.cbom.cbom_model import (
     CBOMAsset,
     BusinessCriticality,
     Exposure,
-    ConfidenceLevel
+    ConfidenceLevel,
+    CostParameters,
+    CostEstimationSummary,
+    LatencyComparisonResult,
+    RoadmapReport,
+    QuantumReadinessAssessment
 )
 from app.crypto_knowledge_base.kb_service import kb
 from app.scanner.scan_orchestrator import scan_orchestrator
 from app.mosca.mosca_engine import mosca_engine
 from app.risk_engine.quantum_risk_engine import quantum_risk_engine
 from app.prioritization.priority_engine import priority_engine
+from app.roadmap.roadmap_engine import roadmap_engine
+from app.readiness.readiness_engine import readiness_engine
+from app.cost_estimator.cost_engine import cost_engine
+from app.latency_simulator.latency_engine import latency_engine
 from app.reporting.report_generator import report_generator
+from app.reporting.migration_plan_generator import migration_plan_generator
 
 router = APIRouter()
 
@@ -92,9 +102,17 @@ def health_check():
     return {
         "status": "healthy",
         "platform": "Quantum-Ready Cryptographic Inventory & Risk Assessment Platform",
-        "version": "1.0.0",
-        "pqc_standards": ["NIST FIPS 203 (ML-KEM)", "NIST FIPS 204 (ML-DSA)", "NIST FIPS 205 (SLH-DSA)"],
-        "capabilities": ["folder_upload", "zip_tar_upload", "git_clone_scan", "local_path_scan", "ast_analysis"]
+        "version": "2.0.0",
+        "features": [
+            "migration_roadmap_generator",
+            "quantum_readiness_score",
+            "cost_estimator",
+            "latency_impact_simulator",
+            "hndl_exposure_simulator",
+            "export_migration_plan",
+            "explainable_risk_breakdown"
+        ],
+        "pqc_standards": ["NIST FIPS 203 (ML-KEM)", "NIST FIPS 204 (ML-DSA)", "NIST FIPS 205 (SLH-DSA)"]
     }
 
 @router.get("/samples")
@@ -195,7 +213,7 @@ async def scan_upload(
 @router.post("/scan/folder-upload", response_model=CBOMReport)
 async def scan_folder_upload(
     files: List[UploadFile] = File(...),
-    paths: str = Form(...), # JSON array of relative paths
+    paths: str = Form(...),
     folder_name: str = Form("Uploaded Folder"),
     application: str = Form("Uploaded Application"),
     environment: str = Form("PRODUCTION"),
@@ -214,7 +232,6 @@ async def scan_folder_upload(
     with tempfile.TemporaryDirectory() as temp_dir:
         for idx, file_obj in enumerate(files):
             rel_path = rel_paths[idx] if idx < len(rel_paths) else file_obj.filename
-            # Sanitize path to prevent directory traversal
             clean_rel_path = os.path.normpath(rel_path).replace("\\", "/")
             if clean_rel_path.startswith("..") or os.path.isabs(clean_rel_path):
                 clean_rel_path = os.path.basename(clean_rel_path)
@@ -261,7 +278,6 @@ def scan_git_repo(req: GitRepoScanRequest):
     if not url.startswith(("http://", "https://", "git://", "git@")):
         raise HTTPException(status_code=400, detail="Invalid Git URL. Must start with https://, http://, or git@")
 
-    # Extract repo name
     repo_name = url.rstrip("/").split("/")[-1].replace(".git", "") or "Git Repository"
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -360,6 +376,44 @@ def scan_raw_code(req: RawCodeRequest):
     )
     return cbom
 
+# -------------------------------------------------------------
+# FEATURE 4: LATENCY SIMULATOR ENDPOINT
+# -------------------------------------------------------------
+class LatencyCompareRequest(BaseModel):
+    classical_algorithm: str
+    target_pqc_or_hybrid: str
+
+@router.post("/latency-impact", response_model=LatencyComparisonResult)
+def simulate_latency_impact(req: LatencyCompareRequest):
+    return latency_engine.compare_algorithms(req.classical_algorithm, req.target_pqc_or_hybrid)
+
+@router.get("/latency-impact", response_model=LatencyComparisonResult)
+def get_latency_impact(classical: str = "RSA-2048", pqc: str = "ML-KEM-768"):
+    return latency_engine.compare_algorithms(classical, pqc)
+
+# -------------------------------------------------------------
+# FEATURE 3: COST ESTIMATION OVERRIDE ENDPOINT
+# -------------------------------------------------------------
+class CostEstimateRequest(BaseModel):
+    assets: List[CBOMAsset]
+    developer_hourly_rate: Optional[float] = 120.0
+    qa_testing_hourly_rate: Optional[float] = 90.0
+    infra_cost_per_asset: Optional[float] = 500.0
+    complexity_multiplier: Optional[float] = 1.0
+
+@router.post("/cost-estimate", response_model=CostEstimationSummary)
+def calculate_cost_estimate(req: CostEstimateRequest):
+    params = CostParameters(
+        developer_hourly_rate=req.developer_hourly_rate or 120.0,
+        qa_testing_hourly_rate=req.qa_testing_hourly_rate or 90.0,
+        infra_cost_per_asset=req.infra_cost_per_asset or 500.0,
+        complexity_multiplier=req.complexity_multiplier or 1.0
+    )
+    return cost_engine.calculate_portfolio_cost(req.assets, params)
+
+# -------------------------------------------------------------
+# FEATURE 5 & REALTIME MOSCA RE-CALCULATION
+# -------------------------------------------------------------
 class MoscaSimulationRequest(BaseModel):
     x_data_lifetime: float
     y_migration_time: float
@@ -383,7 +437,7 @@ def simulate_mosca(req: MoscaSimulationRequest):
         if new_mosca.is_urgent:
             mosca_urgent_count += 1
 
-        new_risk_score, new_risk_lvl, rationales = quantum_risk_engine.calculate_risk(
+        new_risk_score, new_risk_lvl, rationales, factor_scores, risk_explanation, recommended_action = quantum_risk_engine.calculate_risk(
             algorithm=a.algorithm,
             key_size=a.key_size,
             usage=a.usage,
@@ -398,22 +452,74 @@ def simulate_mosca(req: MoscaSimulationRequest):
         a.risk_score = new_risk_score
         a.risk_level = new_risk_lvl
         a.risk_factors = rationales
+        a.risk_factor_breakdown = factor_scores
+        a.risk_explanation = risk_explanation
+        a.recommended_action = recommended_action
         a.data_lifetime_years = req.x_data_lifetime
         a.migration_time_years = req.y_migration_time
         total_risk += new_risk_score
         updated_assets.append(a)
 
     prioritized = priority_engine.prioritize_assets(updated_assets)
-    avg_risk = round(total_risk / len(prioritized), 1) if prioritized else 0.0
+    enriched_assets, roadmap_rep = roadmap_engine.generate_roadmap(prioritized)
+
+    # Recompute summary metrics
+    summary = ScanSummary(
+        scan_id="SIMULATED",
+        scan_timestamp="NOW",
+        target_name="Simulated Scenario",
+        files_scanned=len(enriched_assets),
+        libraries_detected=1,
+        crypto_assets_count=len(enriched_assets),
+        algorithm_counts={},
+        risk_distribution={},
+        confidence_distribution={},
+        quantum_vulnerable_count=sum(1 for a in enriched_assets if a.quantum_vulnerability in ["CRITICAL", "HIGH"]),
+        pqc_ready_count=sum(1 for a in enriched_assets if "QUANTUM_RESISTANT" in str(a.quantum_vulnerability) or "ML-" in a.algorithm),
+        mosca_urgent_count=mosca_urgent_count,
+        critical_risk_count=sum(1 for a in enriched_assets if a.risk_level == "CRITICAL"),
+        high_risk_count=sum(1 for a in enriched_assets if a.risk_level == "HIGH"),
+        average_risk_score=round(total_risk / len(enriched_assets), 1) if enriched_assets else 0.0
+    )
+
+    readiness = readiness_engine.evaluate_readiness(enriched_assets, summary)
+    costs = cost_engine.calculate_portfolio_cost(enriched_assets)
 
     return {
-        "assets": prioritized,
+        "assets": enriched_assets,
         "mosca_urgent_count": mosca_urgent_count,
-        "average_risk_score": avg_risk,
+        "average_risk_score": summary.average_risk_score,
         "x_plus_y": round(req.x_data_lifetime + req.y_migration_time, 2),
-        "is_overall_urgent": (req.x_data_lifetime + req.y_migration_time) > req.z_quantum_timeline
+        "is_overall_urgent": (req.x_data_lifetime + req.y_migration_time) > req.z_quantum_timeline,
+        "roadmap_report": roadmap_rep,
+        "readiness_assessment": readiness,
+        "cost_summary": costs
     }
 
+# -------------------------------------------------------------
+# FEATURE 6: EXPORT MIGRATION PLAN ENDPOINTS
+# -------------------------------------------------------------
+@router.post("/export/migration-plan/html")
+def export_migration_plan_html(cbom: CBOMReport):
+    html_str = migration_plan_generator.generate_html_plan(cbom)
+    return Response(
+        content=html_str,
+        media_type="text/html",
+        headers={"Content-Disposition": f"attachment; filename=migration_plan_{cbom.scan_summary.scan_id}.html"}
+    )
+
+@router.post("/export/migration-plan/json")
+def export_migration_plan_json(cbom: CBOMReport):
+    json_str = migration_plan_generator.generate_json_plan(cbom)
+    return Response(
+        content=json_str,
+        media_type="application/json",
+        headers={"Content-Disposition": f"attachment; filename=migration_plan_{cbom.scan_summary.scan_id}.json"}
+    )
+
+# -------------------------------------------------------------
+# STANDARDIZED CBOM EXPORTS
+# -------------------------------------------------------------
 @router.post("/export/cbom/json")
 def export_cbom_json(cbom: CBOMReport):
     json_str = report_generator.generate_json(cbom)
