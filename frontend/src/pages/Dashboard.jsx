@@ -25,11 +25,20 @@ import {
   Terminal,
   Zap,
   Info,
-  Server
+  Server,
+  ExternalLink
 } from 'lucide-react';
+
+import QuantumThreatMap from '../components/visuals/QuantumThreatMap';
+import FMEAMigrationFailureVisual from '../components/visuals/FMEAMigrationFailureVisual';
+import CryptographicEnvironmentGraph from '../components/visuals/CryptographicEnvironmentGraph';
+import HNDLTimelineVisual from '../components/visuals/HNDLTimelineVisual';
+import MigrationReadinessVisual from '../components/visuals/MigrationReadinessVisual';
+import QuantumRiskTrend from '../components/visuals/QuantumRiskTrend';
 
 export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
   const [hoveredAlgo, setHoveredAlgo] = useState(null);
+  const [activeDonutFilter, setActiveDonutFilter] = useState(null);
 
   // Empty State / First-Time Onboarding
   if (!cbomReport || !cbomReport.scan_summary || cbomReport.scan_summary.crypto_assets_count === 0) {
@@ -59,7 +68,7 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 text-left font-mono">
           <div className="p-4 rounded-xl bg-command-card/80 border border-command-border space-y-1">
             <span className="text-xs font-bold text-cyan-400">01. Source Discovery</span>
-            <p className="text-[11px] text-slate-400 font-sans">Multi-channel AST & binary cryptographic asset discovery.</p>
+            <p className="text-[11px] text-slate-400 font-sans">Multi-channel AST &amp; binary cryptographic asset discovery.</p>
           </div>
           <div className="p-4 rounded-xl bg-command-card/80 border border-command-border space-y-1">
             <span className="text-xs font-bold text-blue-400">02. User Consent</span>
@@ -71,15 +80,15 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
           </div>
           <div className="p-4 rounded-xl bg-command-card/80 border border-command-border space-y-1">
             <span className="text-xs font-bold text-rose-400">04. Quantum FMEA</span>
-            <p className="text-[11px] text-slate-400 font-sans">Deterministic Risk Priority Number ($S \times O \times D = \text{RPN}$) calculation.</p>
+            <p className="text-[11px] text-slate-400 font-sans">Deterministic Risk Priority Number (S &times; O &times; D = RPN) calculation.</p>
           </div>
           <div className="p-4 rounded-xl bg-command-card/80 border border-command-border space-y-1">
             <span className="text-xs font-bold text-amber-400">05. Mosca Theorem</span>
-            <p className="text-[11px] text-slate-400 font-sans">Harvest-Now-Decrypt-Later ($X+Y&gt;Z$) timeline modeling.</p>
+            <p className="text-[11px] text-slate-400 font-sans">Harvest-Now-Decrypt-Later (X + Y &gt; Z) timeline modeling.</p>
           </div>
           <div className="p-4 rounded-xl bg-command-card/80 border border-command-border space-y-1">
             <span className="text-xs font-bold text-emerald-400">06. NIST PQC Roadmap</span>
-            <p className="text-[11px] text-slate-400 font-sans">FIPS 203/204 transitional hybrid & pure migration playbooks.</p>
+            <p className="text-[11px] text-slate-400 font-sans">FIPS 203/204 transitional hybrid &amp; pure migration playbooks.</p>
           </div>
         </div>
 
@@ -101,7 +110,6 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
   const rm = cbomReport.roadmap_report;
   const c = cbomReport.cost_summary;
   const fmea = cbomReport.fmea_summary;
-  const dep = cbomReport.dependency_graph;
   const assets = cbomReport.assets || [];
 
   const score = r ? r.overall_score : 62.0;
@@ -127,7 +135,7 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
       algoMap[key] = {
         name: key,
         count: 0,
-        isShor: a.quantum_vulnerability === 'SHOR_BROKEN',
+        isShor: a.quantum_vulnerability === 'CRITICAL' || a.quantum_vulnerability === 'HIGH' || a.quantum_vulnerability === 'SHOR_BROKEN' || key.includes('RSA') || key.includes('ECDSA') || key.includes('ECDH'),
         risk: a.risk_level,
         keySize: a.key_size,
         category: a.category
@@ -143,26 +151,19 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
     .filter(a => a.migration_phase === 'PHASE_1_IMMEDIATE' || a.risk_level === 'CRITICAL' || (a.mosca && a.mosca.is_urgent))
     .slice(0, 5);
 
-  // FMEA Distribution
-  const fmeaCrit = assets.filter(a => a.fmea && a.fmea.rpn >= 300).length;
-  const fmeaHigh = assets.filter(a => a.fmea && a.fmea.rpn >= 200 && a.fmea.rpn < 300).length;
-  const fmeaMed = assets.filter(a => a.fmea && a.fmea.rpn >= 100 && a.fmea.rpn < 200).length;
-  const fmeaLow = assets.filter(a => a.fmea && a.fmea.rpn < 100).length;
-  const maxFmeaGroup = Math.max(fmeaCrit, fmeaHigh, fmeaMed, fmeaLow, 1);
-
   // Radial Gauge Geometry (180 degree arc)
   const radius = 80;
   const circumference = Math.PI * radius;
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="p-6 sm:p-8 space-y-7 max-w-7xl mx-auto text-slate-100">
+    <div className="p-6 sm:p-8 space-y-8 max-w-7xl mx-auto text-slate-100 command-grid">
       
-      {/* 1. Header Command Ribbon */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-command-border/80">
+      {/* 1. HEADER COMMAND RIBBON */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E2D4A]">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <span className="text-[10px] font-mono font-bold tracking-widest text-cyan-400 uppercase px-2.5 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/30 shadow-xs">
+            <span className="text-[10px] font-mono font-bold tracking-widest text-cyan-400 uppercase px-2.5 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/30">
               ENTERPRISE CRYPTOGRAPHIC INTELLIGENCE
             </span>
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 font-mono font-semibold flex items-center gap-1.5">
@@ -171,7 +172,7 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
             </span>
           </div>
           <h1 className="text-2xl font-black font-mono tracking-tight text-white glow-cyan flex items-center gap-2">
-            <span>QUANTUM READINESS DASHBOARD</span>
+            <span>QUANTUM READINESS COMMAND CENTER</span>
           </h1>
           <p className="text-xs font-mono text-slate-400">
             Real-time cryptographic intelligence for a quantum-resilient future &bull; Target: <strong className="text-white font-semibold">{s.target_name}</strong>
@@ -181,7 +182,7 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => onNavigate('roadmap')}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono font-semibold bg-command-card hover:bg-command-cardHover text-slate-300 hover:text-white border border-command-border transition shadow-command-card"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-mono font-semibold bg-[#070D1E] hover:bg-[#0D1730] text-slate-300 hover:text-white border border-[#1E2D4A] transition"
           >
             <Compass className="w-3.5 h-3.5 text-cyan-400" />
             <span>Roadmap</span>
@@ -196,11 +197,11 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
         </div>
       </div>
 
-      {/* 2. HERO SECTION: Interactive Quantum Readiness Gauge & 4 Key Telemetry Tiles */}
+      {/* 2. QUANTUM READINESS HERO ROW */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Hero Left: Animated Quantum Readiness Dial (5 cols) */}
-        <div className="lg:col-span-5 p-6 rounded-2xl command-card command-card-glow flex flex-col justify-between relative overflow-hidden">
+        {/* Hero Left: Animated Quantum Readiness Gauge (5 cols) */}
+        <div className="lg:col-span-5 p-6 rounded-2xl command-card border-cyan-500/30 flex flex-col justify-between relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
           
           <div className="flex items-center justify-between z-10">
@@ -226,13 +227,6 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
                     <stop offset="70%" stopColor="#00F0FF" />
                     <stop offset="100%" stopColor="#10B981" />
                   </linearGradient>
-                  <filter id="gaugeGlow">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
                 </defs>
 
                 {/* Track background */}
@@ -253,7 +247,6 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
                   strokeLinecap="round"
                   strokeDasharray={`${circumference}`}
                   strokeDashoffset={`${strokeDashoffset}`}
-                  filter="url(#gaugeGlow)"
                   className="transition-all duration-1000 ease-out"
                 />
               </svg>
@@ -278,147 +271,156 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
           </div>
 
           {/* 4 Pillar Sub-Meters */}
-          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-command-border/80 text-[11px] font-mono z-10">
-            <div className="p-2 rounded-lg bg-command-surface/80 border border-command-border/60">
+          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[#1E2D4A] text-[11px] font-mono z-10">
+            <div className="p-2 rounded-lg bg-[#070D1E] border border-[#1E2D4A]">
               <span className="text-slate-400 block text-[9px] uppercase">Agility Score</span>
               <span className="font-bold text-cyan-300">{r?.pillar_scores?.crypto_agility?.toFixed(0) || '72'}/100</span>
             </div>
-            <div className="p-2 rounded-lg bg-command-surface/80 border border-command-border/60">
+            <div className="p-2 rounded-lg bg-[#070D1E] border border-[#1E2D4A]">
               <span className="text-slate-400 block text-[9px] uppercase">PQC Resistance</span>
               <span className="font-bold text-rose-400">{r?.pillar_scores?.algorithm_quantum_resistance?.toFixed(0) || '38'}/100</span>
             </div>
-            <div className="p-2 rounded-lg bg-command-surface/80 border border-command-border/60">
+            <div className="p-2 rounded-lg bg-[#070D1E] border border-[#1E2D4A]">
               <span className="text-slate-400 block text-[9px] uppercase">FMEA Stability</span>
               <span className="font-bold text-amber-400">{r?.pillar_scores?.fmea_stability?.toFixed(0) || '58'}/100</span>
             </div>
-            <div className="p-2 rounded-lg bg-command-surface/80 border border-command-border/60">
+            <div className="p-2 rounded-lg bg-[#070D1E] border border-[#1E2D4A]">
               <span className="text-slate-400 block text-[9px] uppercase">Governance</span>
               <span className="font-bold text-emerald-400">{r?.pillar_scores?.governance_policy?.toFixed(0) || '80'}/100</span>
             </div>
           </div>
         </div>
 
-        {/* Hero Right: 4 High-Impact Telemetry Metrics (7 cols) */}
-        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          
-          {/* Metric 1: Total Crypto Assets */}
-          <div 
-            onClick={() => onNavigate('cbom')}
-            className="p-5 rounded-2xl command-card cursor-pointer hover:border-cyan-500/50 space-y-3 group"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
-                Total Crypto Assets
-              </span>
-              <div className="p-2 rounded-xl bg-cyan-950/80 text-cyan-400 border border-cyan-500/30 group-hover:scale-110 transition">
-                <Database className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-3xl font-black text-white font-mono glow-cyan">
-                {s.crypto_assets_count}
-              </div>
-              <p className="text-[11px] text-slate-400 font-mono">
-                Discovered in <strong className="text-slate-200">{s.files_scanned} files</strong> across codebase
-              </p>
-            </div>
-            <div className="pt-2 border-t border-command-border/60 flex items-center justify-between text-[11px] font-mono text-cyan-400">
-              <span>View CBOM Inventory</span>
-              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
-            </div>
-          </div>
-
-          {/* Metric 2: Critical Shor Risk */}
-          <div 
-            onClick={() => onNavigate('readiness')}
-            className="p-5 rounded-2xl command-card command-card-critical cursor-pointer hover:border-rose-500/50 space-y-3 group"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider">
-                Critical Shor Vulnerable
-              </span>
-              <div className="p-2 rounded-xl bg-rose-950/80 text-rose-400 border border-rose-500/40 group-hover:scale-110 transition">
-                <ShieldAlert className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-3xl font-black text-rose-400 font-mono glow-red">
-                {s.critical_risk_count}
-              </div>
-              <p className="text-[11px] text-slate-400 font-mono">
-                RSA &amp; ECC public-key cryptography
-              </p>
-            </div>
-            <div className="pt-2 border-t border-rose-950/60 flex items-center justify-between text-[11px] font-mono text-rose-400">
-              <span>Urgent Remediation</span>
-              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
-            </div>
-          </div>
-
-          {/* Metric 3: High Risk Assets */}
-          <div 
-            onClick={() => onNavigate('fmea')}
-            className="p-5 rounded-2xl command-card cursor-pointer hover:border-amber-500/50 space-y-3 group"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
-                High Risk &amp; FMEA Flags
-              </span>
-              <div className="p-2 rounded-xl bg-amber-950/80 text-amber-400 border border-amber-500/40 group-hover:scale-110 transition">
-                <AlertTriangle className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-3xl font-black text-amber-400 font-mono">
-                {s.high_risk_count}
-              </div>
-              <p className="text-[11px] text-slate-400 font-mono">
-                High RPN migration failure modes
-              </p>
-            </div>
-            <div className="pt-2 border-t border-command-border/60 flex items-center justify-between text-[11px] font-mono text-amber-400">
-              <span>Inspect FMEA Matrix</span>
-              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
-            </div>
-          </div>
-
-          {/* Metric 4: Mosca HNDL Urgency */}
-          <div 
-            onClick={() => onNavigate('simulators')}
-            className="p-5 rounded-2xl command-card cursor-pointer hover:border-indigo-500/50 space-y-3 group"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-indigo-400 uppercase tracking-wider">
-                Mosca HNDL Urgent ($X+Y &gt; Z$)
-              </span>
-              <div className="p-2 rounded-xl bg-indigo-950/80 text-indigo-400 border border-indigo-500/40 group-hover:scale-110 transition">
-                <Clock className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-3xl font-black text-indigo-400 font-mono">
-                {s.mosca_urgent_count}
-              </div>
-              <p className="text-[11px] text-slate-400 font-mono">
-                Harvest-Now-Decrypt-Later exposed
-              </p>
-            </div>
-            <div className="pt-2 border-t border-command-border/60 flex items-center justify-between text-[11px] font-mono text-indigo-400">
-              <span>Open HNDL Simulator</span>
-              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
-            </div>
-          </div>
-
+        {/* Hero Right: SIGNATURE VISUAL 1 — QUANTUM THREAT MAP (7 cols) */}
+        <div className="lg:col-span-7">
+          <QuantumThreatMap 
+            cbomReport={cbomReport}
+            onSelectAsset={onSelectAsset}
+            onNavigate={onNavigate}
+          />
         </div>
 
       </div>
 
-      {/* 3. VISUAL ANALYTICS ROW: Quantum Risk Donut, Top Algorithm Horizontal Bars, & Shor Comparison */}
+      {/* 3. KEY TELEMETRY TILES ROW */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        {/* Metric 1: Total Crypto Assets */}
+        <div 
+          onClick={() => onNavigate('cbom')}
+          className="p-5 rounded-2xl command-card cursor-pointer hover:border-cyan-500/50 space-y-3 group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
+              Total Crypto Assets
+            </span>
+            <div className="p-2 rounded-xl bg-cyan-950/80 text-cyan-400 border border-cyan-500/30 group-hover:scale-110 transition">
+              <Database className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-3xl font-black text-white font-mono glow-cyan">
+              {s.crypto_assets_count}
+            </div>
+            <p className="text-[11px] text-slate-400 font-mono">
+              Discovered in <strong className="text-slate-200">{s.files_scanned} files</strong> across repository
+            </p>
+          </div>
+          <div className="pt-2 border-t border-[#1E2D4A] flex items-center justify-between text-[11px] font-mono text-cyan-400">
+            <span>View CBOM Inventory</span>
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
+          </div>
+        </div>
+
+        {/* Metric 2: Critical Shor Risk */}
+        <div 
+          onClick={() => onNavigate('readiness')}
+          className="p-5 rounded-2xl command-card border-rose-500/40 cursor-pointer hover:border-rose-500 space-y-3 group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider">
+              Critical Shor Vulnerable
+            </span>
+            <div className="p-2 rounded-xl bg-rose-950/80 text-rose-400 border border-rose-500/40 group-hover:scale-110 transition">
+              <ShieldAlert className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-3xl font-black text-rose-400 font-mono glow-red">
+              {s.critical_risk_count}
+            </div>
+            <p className="text-[11px] text-slate-400 font-mono">
+              RSA &amp; ECC public-key primitives
+            </p>
+          </div>
+          <div className="pt-2 border-t border-rose-950/60 flex items-center justify-between text-[11px] font-mono text-rose-400">
+            <span>Urgent Remediation</span>
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
+          </div>
+        </div>
+
+        {/* Metric 3: High Risk & FMEA Flags */}
+        <div 
+          onClick={() => onNavigate('fmea')}
+          className="p-5 rounded-2xl command-card cursor-pointer hover:border-amber-500/50 space-y-3 group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
+              High Risk &amp; FMEA Flags
+            </span>
+            <div className="p-2 rounded-xl bg-amber-950/80 text-amber-400 border border-amber-500/40 group-hover:scale-110 transition">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-3xl font-black text-amber-400 font-mono">
+              {s.high_risk_count}
+            </div>
+            <p className="text-[11px] text-slate-400 font-mono">
+              High RPN migration failure modes
+            </p>
+          </div>
+          <div className="pt-2 border-t border-[#1E2D4A] flex items-center justify-between text-[11px] font-mono text-amber-400">
+            <span>Inspect FMEA Matrix</span>
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
+          </div>
+        </div>
+
+        {/* Metric 4: Mosca HNDL Urgency */}
+        <div 
+          onClick={() => onNavigate('simulators')}
+          className="p-5 rounded-2xl command-card cursor-pointer hover:border-indigo-500/50 space-y-3 group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono font-bold text-indigo-400 uppercase tracking-wider">
+              Mosca HNDL Urgent (X+Y &gt; Z)
+            </span>
+            <div className="p-2 rounded-xl bg-indigo-950/80 text-indigo-400 border border-indigo-500/40 group-hover:scale-110 transition">
+              <Clock className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-3xl font-black text-indigo-400 font-mono">
+              {s.mosca_urgent_count}
+            </div>
+            <p className="text-[11px] text-slate-400 font-mono">
+              Harvest-Now-Decrypt-Later exposed
+            </p>
+          </div>
+          <div className="pt-2 border-t border-[#1E2D4A] flex items-center justify-between text-[11px] font-mono text-indigo-400">
+            <span>Open HNDL Simulator</span>
+            <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
+          </div>
+        </div>
+
+      </div>
+
+      {/* 4. VISUAL ANALYTICS ROW: Risk Classification Donut, Top Algorithm Exposure Bars, and SIGNATURE VISUAL 2 — FMEA VISUAL */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Donut: Quantum Risk Distribution (4 cols) */}
+        {/* Donut: Risk Classification (4 cols) */}
         <div className="lg:col-span-4 p-6 rounded-2xl command-card space-y-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-command-border/80 pb-3">
+          <div className="flex items-center justify-between border-b border-[#1E2D4A] pb-3">
             <div className="flex items-center gap-2">
               <PieChart className="w-4 h-4 text-cyan-400" />
               <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
@@ -445,7 +447,8 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
                   strokeWidth="12"
                   strokeDasharray={`${(criticalPct * 2.387).toFixed(1)} 238.7`}
                   strokeDashoffset="0"
-                  className="transition-all duration-500 hover:stroke-[14]"
+                  className="transition-all duration-500 hover:stroke-[14] cursor-pointer"
+                  onClick={() => onNavigate('cbom')}
                 />
 
                 {/* High Segment (Orange) */}
@@ -458,7 +461,8 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
                   strokeWidth="12"
                   strokeDasharray={`${(highPct * 2.387).toFixed(1)} 238.7`}
                   strokeDashoffset={`${-(criticalPct * 2.387).toFixed(1)}`}
-                  className="transition-all duration-500 hover:stroke-[14]"
+                  className="transition-all duration-500 hover:stroke-[14] cursor-pointer"
+                  onClick={() => onNavigate('cbom')}
                 />
 
                 {/* Medium Segment (Amber) */}
@@ -471,7 +475,8 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
                   strokeWidth="12"
                   strokeDasharray={`${(mediumPct * 2.387).toFixed(1)} 238.7`}
                   strokeDashoffset={`${-((criticalPct + highPct) * 2.387).toFixed(1)}`}
-                  className="transition-all duration-500 hover:stroke-[14]"
+                  className="transition-all duration-500 hover:stroke-[14] cursor-pointer"
+                  onClick={() => onNavigate('cbom')}
                 />
 
                 {/* Low Segment (Emerald) */}
@@ -484,7 +489,8 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
                   strokeWidth="12"
                   strokeDasharray={`${(lowPct * 2.387).toFixed(1)} 238.7`}
                   strokeDashoffset={`${-((criticalPct + highPct + mediumPct) * 2.387).toFixed(1)}`}
-                  className="transition-all duration-500 hover:stroke-[14]"
+                  className="transition-all duration-500 hover:stroke-[14] cursor-pointer"
+                  onClick={() => onNavigate('cbom')}
                 />
               </svg>
 
@@ -502,7 +508,10 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
 
           {/* Risk Legend Grid */}
           <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-            <div className="p-2 rounded-xl bg-rose-950/40 border border-rose-500/30 flex items-center justify-between">
+            <div 
+              onClick={() => onNavigate('cbom')}
+              className="p-2 rounded-xl bg-rose-950/40 border border-rose-500/30 flex items-center justify-between cursor-pointer hover:bg-rose-950/60 transition"
+            >
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-rose-500 shadow-rose-glow" />
                 <span className="text-rose-300 font-semibold">Critical</span>
@@ -510,7 +519,10 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
               <span className="font-bold text-white">{criticalCount} ({criticalPct}%)</span>
             </div>
 
-            <div className="p-2 rounded-xl bg-orange-950/40 border border-orange-500/30 flex items-center justify-between">
+            <div 
+              onClick={() => onNavigate('cbom')}
+              className="p-2 rounded-xl bg-orange-950/40 border border-orange-500/30 flex items-center justify-between cursor-pointer hover:bg-orange-950/60 transition"
+            >
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-orange-500" />
                 <span className="text-orange-300 font-semibold">High</span>
@@ -518,7 +530,10 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
               <span className="font-bold text-white">{highCount} ({highPct}%)</span>
             </div>
 
-            <div className="p-2 rounded-xl bg-amber-950/40 border border-amber-500/30 flex items-center justify-between">
+            <div 
+              onClick={() => onNavigate('cbom')}
+              className="p-2 rounded-xl bg-amber-950/40 border border-amber-500/30 flex items-center justify-between cursor-pointer hover:bg-amber-950/60 transition"
+            >
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-500" />
                 <span className="text-amber-300 font-semibold">Medium</span>
@@ -526,7 +541,10 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
               <span className="font-bold text-white">{mediumCount} ({mediumPct}%)</span>
             </div>
 
-            <div className="p-2 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between">
+            <div 
+              onClick={() => onNavigate('cbom')}
+              className="p-2 rounded-xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between cursor-pointer hover:bg-emerald-950/60 transition"
+            >
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 <span className="text-emerald-300 font-semibold">Low</span>
@@ -536,16 +554,16 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
           </div>
         </div>
 
-        {/* Horizontal Bar Chart: Top Algorithm Exposure (5 cols) */}
-        <div className="lg:col-span-5 p-6 rounded-2xl command-card space-y-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-command-border/80 pb-3">
+        {/* Horizontal Bar Chart: Top Algorithm Exposure (4 cols) */}
+        <div className="lg:col-span-4 p-6 rounded-2xl command-card space-y-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-[#1E2D4A] pb-3">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-cyan-400" />
               <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
                 Top Algorithm Exposure
               </span>
             </div>
-            <span className="text-[10px] font-mono text-slate-400">By Detection Volume</span>
+            <span className="text-[10px] font-mono text-slate-400">By Detection Count</span>
           </div>
 
           {/* Bars */}
@@ -555,9 +573,10 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
               return (
                 <div 
                   key={idx}
+                  onClick={() => onNavigate('cbom')}
                   onMouseEnter={() => setHoveredAlgo(algo.name)}
                   onMouseLeave={() => setHoveredAlgo(null)}
-                  className="space-y-1 group"
+                  className="space-y-1 group cursor-pointer"
                 >
                   <div className="flex items-center justify-between text-xs font-mono">
                     <div className="flex items-center gap-2">
@@ -578,7 +597,7 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
                   </div>
 
                   {/* Bar track and fill */}
-                  <div className="w-full h-3 rounded-full bg-slate-900 border border-command-border overflow-hidden">
+                  <div className="w-full h-2.5 rounded-full bg-[#050A14] border border-[#1E2D4A] overflow-hidden">
                     <div
                       style={{ width: `${widthPct}%` }}
                       className={`h-full rounded-full transition-all duration-700 ${
@@ -593,276 +612,67 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
             })}
           </div>
 
-          <div className="p-2.5 rounded-xl bg-command-surface/80 border border-command-border flex items-center justify-between text-[11px] font-mono text-slate-400">
-            <span>Critical asymmetric algorithms require hybrid encapsulation replacement.</span>
+          <div className="p-2.5 rounded-xl bg-[#070D1E] border border-[#1E2D4A] flex items-center justify-between text-[11px] font-mono text-slate-400">
+            <span>Critical public-key algorithms require hybrid encapsulation.</span>
             <button 
               onClick={() => onNavigate('knowledge-base')}
               className="text-cyan-400 hover:underline font-bold"
             >
-              Explore Catalog &rarr;
+              KB &rarr;
             </button>
           </div>
         </div>
 
-        {/* Shor Comparison Stack & Trajectory (3 cols) */}
-        <div className="lg:col-span-3 p-6 rounded-2xl command-card space-y-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-command-border/80 pb-3">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-cyan-400" />
-              <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                Quantum Threat
-              </span>
-            </div>
-          </div>
-
-          {/* Shor Vulnerable Gauge */}
-          <div className="p-4 rounded-xl bg-rose-950/30 border border-rose-500/40 space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-rose-300 font-bold">Shor-Vulnerable</span>
-              <span className="font-bold text-rose-400 text-sm">{s.quantum_vulnerable_count} / {s.crypto_assets_count}</span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden">
-              <div 
-                style={{ width: `${Math.round((s.quantum_vulnerable_count / totalAssets) * 100)}%` }}
-                className="h-full bg-rose-500 rounded-full shadow-rose-glow"
-              />
-            </div>
-            <p className="text-[10px] text-slate-400 font-mono">
-              Asymmetric keys vulnerable to polynomial Shor factorisation.
-            </p>
-          </div>
-
-          {/* Quantum Resistant Gauge */}
-          <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/40 space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-emerald-300 font-bold">Grover Resistant</span>
-              <span className="font-bold text-emerald-400 text-sm">{s.crypto_assets_count - s.quantum_vulnerable_count} / {s.crypto_assets_count}</span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden">
-              <div 
-                style={{ width: `${Math.round(((s.crypto_assets_count - s.quantum_vulnerable_count) / totalAssets) * 100)}%` }}
-                className="h-full bg-emerald-500 rounded-full shadow-emerald-glow"
-              />
-            </div>
-            <p className="text-[10px] text-slate-400 font-mono">
-              Symmetric 256-bit ciphers resilient against Grover search.
-            </p>
-          </div>
-
-          <button
-            onClick={() => onNavigate('readiness')}
-            className="w-full py-2 rounded-xl text-xs font-mono font-bold bg-command-surface hover:bg-command-card text-cyan-400 hover:text-cyan-300 border border-command-border transition flex items-center justify-center gap-1.5"
-          >
-            <span>Mosca Urgency Matrix</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+        {/* SIGNATURE VISUAL 2: FMEA MIGRATION FAILURE VISUAL (4 cols) */}
+        <div className="lg:col-span-4">
+          <FMEAMigrationFailureVisual 
+            cbomReport={cbomReport}
+            onNavigate={onNavigate}
+            onSelectAsset={onSelectAsset}
+          />
         </div>
 
       </div>
 
-      {/* 4. MIGRATION TRAJECTORY & QUANTUM FMEA ROW */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* 5. SIGNATURE VISUAL 3: FULL-WIDTH CRYPTOGRAPHIC ENVIRONMENT GRAPH */}
+      <div className="w-full">
+        <CryptographicEnvironmentGraph 
+          cbomReport={cbomReport}
+          onSelectAsset={onSelectAsset}
+          onNavigate={onNavigate}
+        />
+      </div>
+
+      {/* 6. STRATEGIC PLANNING ROW: HNDL Timeline + Migration Readiness + Risk Trend */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
-        {/* Left: 4-Phase Migration Trajectory (7 cols) */}
-        <div className="lg:col-span-7 p-6 rounded-2xl command-card space-y-4">
-          <div className="flex items-center justify-between border-b border-command-border/80 pb-3">
-            <div className="flex items-center gap-2">
-              <Compass className="w-4 h-4 text-cyan-400" />
-              <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                Post-Quantum Transition Trajectory
-              </span>
-            </div>
-            <span className="text-[10px] font-mono text-emerald-400 font-bold">
-              EST. BUDGET: ${c?.total_estimated_cost_usd?.toLocaleString() || '82,980'}
-            </span>
-          </div>
+        {/* Module 1: Mosca / HNDL Visual Timeline */}
+        <HNDLTimelineVisual 
+          cbomReport={cbomReport}
+          onNavigate={onNavigate}
+        />
 
-          {/* 4 Phased Visual Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 font-mono text-xs">
-            <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-500/40 space-y-1.5">
-              <span className="text-[9px] font-bold text-rose-400 uppercase tracking-wider block">Phase 1: Immediate</span>
-              <span className="text-base font-black text-white font-mono">{rm?.phases?.[0]?.asset_count || 12} Assets</span>
-              <p className="text-[10px] text-slate-400 font-sans">Critical KEX &amp; Auth (0-6 mo)</p>
-              <div className="text-[9px] text-rose-300 font-bold pt-1 border-t border-rose-900/60">
-                Risk Target: -55%
-              </div>
-            </div>
+        {/* Module 2: Migration Readiness Step Visual */}
+        <MigrationReadinessVisual 
+          cbomReport={cbomReport}
+          onNavigate={onNavigate}
+        />
 
-            <div className="p-3.5 rounded-xl bg-orange-950/40 border border-orange-500/40 space-y-1.5">
-              <span className="text-[9px] font-bold text-orange-400 uppercase tracking-wider block">Phase 2: High Pri</span>
-              <span className="text-base font-black text-white font-mono">{rm?.phases?.[1]?.asset_count || 7} Assets</span>
-              <p className="text-[10px] text-slate-400 font-sans">Hybrid Rollout (6-18 mo)</p>
-              <div className="text-[9px] text-orange-300 font-bold pt-1 border-t border-orange-900/60">
-                Risk Target: -25%
-              </div>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-blue-950/40 border border-blue-500/40 space-y-1.5">
-              <span className="text-[9px] font-bold text-blue-400 uppercase tracking-wider block">Phase 3: Planned</span>
-              <span className="text-base font-black text-white font-mono">{rm?.phases?.[2]?.asset_count || 4} Assets</span>
-              <p className="text-[10px] text-slate-400 font-sans">Pure PQC Baseline (18-36 mo)</p>
-              <div className="text-[9px] text-blue-300 font-bold pt-1 border-t border-blue-900/60">
-                Risk Target: -15%
-              </div>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 space-y-1.5">
-              <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider block">Phase 4: Resilient</span>
-              <span className="text-base font-black text-white font-mono">{rm?.phases?.[3]?.asset_count || 2} Assets</span>
-              <p className="text-[10px] text-slate-400 font-sans">Automated Compliance (36+ mo)</p>
-              <div className="text-[9px] text-emerald-300 font-bold pt-1 border-t border-emerald-900/60">
-                Residual Risk: 0%
-              </div>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-command-surface/90 border border-command-border flex items-center justify-between text-xs font-mono">
-            <span className="text-slate-300">
-              Total Engineering Effort: <strong className="text-cyan-300">{rm?.total_effort_hours || 680} hours</strong>
-            </span>
-            <button
-              onClick={() => onNavigate('roadmap')}
-              className="text-cyan-400 hover:text-cyan-300 font-bold hover:underline flex items-center gap-1"
-            >
-              <span>Explore Strategic Roadmap</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-
-        {/* Right: Quantum FMEA Migration Risk (5 cols) */}
-        <div className="lg:col-span-5 p-6 rounded-2xl command-card space-y-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-command-border/80 pb-3">
-            <div className="flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-rose-400" />
-              <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-                PQC Migration Failure Risk (FMEA)
-              </span>
-            </div>
-            <span className="text-[10px] font-mono text-rose-400 font-bold">MAX RPN: {fmea?.max_rpn || 392}</span>
-          </div>
-
-          {/* FMEA RPN Distribution Bars */}
-          <div className="space-y-2 text-xs font-mono">
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px]">
-                <span className="text-rose-400 font-semibold">Critical Priority (RPN &ge; 300)</span>
-                <span className="text-white font-bold">{fmeaCrit} Failure Modes</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden">
-                <div style={{ width: `${(fmeaCrit / maxFmeaGroup) * 100}%` }} className="h-full bg-rose-500 rounded-full" />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px]">
-                <span className="text-orange-400 font-semibold">High Priority (200 &le; RPN &lt; 300)</span>
-                <span className="text-white font-bold">{fmeaHigh} Failure Modes</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden">
-                <div style={{ width: `${(fmeaHigh / maxFmeaGroup) * 100}%` }} className="h-full bg-orange-500 rounded-full" />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px]">
-                <span className="text-amber-400 font-semibold">Medium Priority (100 &le; RPN &lt; 200)</span>
-                <span className="text-white font-bold">{fmeaMed} Failure Modes</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden">
-                <div style={{ width: `${(fmeaMed / maxFmeaGroup) * 100}%` }} className="h-full bg-amber-500 rounded-full" />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex justify-between text-[11px]">
-                <span className="text-emerald-400 font-semibold">Controlled Baseline (RPN &lt; 100)</span>
-                <span className="text-white font-bold">{fmeaLow} Failure Modes</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden">
-                <div style={{ width: `${(fmeaLow / maxFmeaGroup) * 100}%` }} className="h-full bg-emerald-500 rounded-full" />
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-command-border/60 flex items-center justify-between text-[11px] font-mono">
-            <span className="text-slate-400">Mean Portfolio RPN: <strong className="text-white">{fmea?.average_rpn || 297.9}</strong></span>
-            <button
-              onClick={() => onNavigate('fmea')}
-              className="text-cyan-400 hover:underline font-bold"
-            >
-              Inspect Full FMEA Table &rarr;
-            </button>
-          </div>
-        </div>
+        {/* Module 3: Quantum Risk Trend Line Chart */}
+        <QuantumRiskTrend 
+          cbomReport={cbomReport}
+          onNavigate={onNavigate}
+        />
 
       </div>
 
-      {/* 5. SYSTEM HEALTH MODULE */}
-      <div className="p-5 rounded-2xl command-card space-y-3">
-        <div className="flex items-center justify-between border-b border-command-border/80 pb-2">
-          <div className="flex items-center gap-2">
-            <Server className="w-4 h-4 text-cyan-400" />
-            <span className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-              QUANTECT Engine &amp; Service Telemetry
-            </span>
-          </div>
-          <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1.5 font-bold">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            100% OPERATIONAL
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs font-mono">
-          <div className="p-3 rounded-xl bg-command-surface/80 border border-command-border space-y-1">
-            <span className="text-[10px] text-slate-400 block uppercase">Scanner Service</span>
-            <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>ONLINE ({s.files_scanned} files)</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-command-surface/80 border border-command-border space-y-1">
-            <span className="text-[10px] text-slate-400 block uppercase">Risk Engine</span>
-            <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>ONLINE (Shor/Mosca)</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-command-surface/80 border border-command-border space-y-1">
-            <span className="text-[10px] text-slate-400 block uppercase">FMEA Calculus</span>
-            <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>ONLINE (S &times; O &times; D)</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-command-surface/80 border border-command-border space-y-1">
-            <span className="text-[10px] text-slate-400 block uppercase">NIST PQC Engine</span>
-            <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>ONLINE (FIPS 203/204)</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-command-surface/80 border border-command-border space-y-1">
-            <span className="text-[10px] text-slate-400 block uppercase">Monitoring Daemon</span>
-            <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>ACTIVE (Heartbeat OK)</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 6. PRIORITY REMEDIATION BACKLOG */}
+      {/* 7. PRIORITY REMEDIATION BACKLOG */}
       <div className="p-6 rounded-2xl command-card space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-command-border/80">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#1E2D4A]">
           <div>
             <h2 className="text-sm font-bold font-mono text-white flex items-center gap-2">
               <ShieldAlert className="w-4 h-4 text-rose-400" />
-              <span>Immediate Quantum Vulnerability Backlog (Action Items)</span>
+              <span>Immediate Quantum Vulnerability Backlog (Top Action Items)</span>
             </h2>
             <p className="text-[11px] font-mono text-slate-400">
               Ranked by polynomial Shor exposure, Harvest-Now-Decrypt-Later urgency, and migration RPN.
@@ -882,7 +692,7 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
           {topPriorities.map((asset) => (
             <div
               key={asset.asset_id}
-              className="p-4 rounded-xl bg-command-surface/90 border border-command-border hover:border-cyan-500/50 hover:bg-command-card transition flex flex-col xl:flex-row xl:items-center justify-between gap-4 group"
+              className="p-4 rounded-xl bg-[#070D1E] border border-[#1E2D4A] hover:border-cyan-500/50 hover:bg-[#0A1224] transition flex flex-col xl:flex-row xl:items-center justify-between gap-4 group"
             >
               <div className="space-y-2 flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
@@ -896,7 +706,7 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
                     Risk: {asset.risk_score} (CRITICAL)
                   </span>
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950 text-blue-300 border border-blue-500/40 font-mono">
-                    {asset.phase_label}
+                    {asset.phase_label || asset.migration_phase}
                   </span>
                 </div>
                 <div className="text-xs text-slate-400 font-mono truncate" title={`${asset.file}:${asset.line_number || 1}`}>
@@ -907,7 +717,7 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
                 </p>
               </div>
 
-              <div className="flex items-center justify-between xl:justify-end gap-4 pt-3 xl:pt-0 border-t xl:border-t-0 xl:border-l border-command-border xl:pl-4 flex-shrink-0">
+              <div className="flex items-center justify-between xl:justify-end gap-4 pt-3 xl:pt-0 border-t xl:border-t-0 xl:border-l border-[#1E2D4A] xl:pl-4 flex-shrink-0">
                 <div className="text-left xl:text-right">
                   <span className="text-[10px] font-mono font-semibold uppercase text-slate-400 block tracking-wider">
                     Recommended Target
@@ -918,7 +728,7 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
                 </div>
                 <button
                   onClick={() => onSelectAsset(asset)}
-                  className="px-3.5 py-2 rounded-xl text-xs font-mono font-bold bg-command-card hover:bg-cyan-950 text-slate-200 hover:text-cyan-300 border border-command-border hover:border-cyan-500/50 transition shadow-xs flex items-center gap-1.5 flex-shrink-0"
+                  className="px-3.5 py-2 rounded-xl text-xs font-mono font-bold bg-[#0D1730] hover:bg-cyan-950 text-slate-200 hover:text-cyan-300 border border-[#1E2D4A] hover:border-cyan-500/50 transition shadow-xs flex items-center gap-1.5 flex-shrink-0"
                 >
                   <span>Inspect</span>
                   <ChevronRight className="w-3.5 h-3.5 text-cyan-400" />
