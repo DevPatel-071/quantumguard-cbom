@@ -26,6 +26,17 @@ export default function App() {
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [initialLoading, setInitialLoading] = useState(false);
 
+  // Seamlessly populate default cryptographic baseline on mount so the user never has to provide initial input
+  useEffect(() => {
+    scanSampleRepo('banking-payment-gateway')
+      .then((data) => {
+        setCbomReport(data);
+      })
+      .catch((err) => {
+        console.error('Cryptographic baseline initialization:', err);
+      });
+  }, []);
+
   const handleScanComplete = (newReport) => {
     setCbomReport(newReport);
     setActiveTab('dashboard');

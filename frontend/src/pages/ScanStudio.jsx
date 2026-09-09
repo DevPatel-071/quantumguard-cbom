@@ -146,7 +146,7 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
       setError('Please specify an absolute local directory path.');
       return;
     }
-    setShowConsent(true);
+    executeScan(false);
   };
 
   const executeScan = async (isContinuous) => {
