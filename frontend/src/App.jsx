@@ -15,6 +15,7 @@ import ContinuousMonitoring from './pages/ContinuousMonitoring';
 import Recommendations from './pages/Recommendations';
 import KnowledgeBaseExplorer from './pages/KnowledgeBaseExplorer';
 import Reports from './pages/Reports';
+import defaultBaselineCBOM from './services/defaultBaselineCBOM.json';
 import { scanSampleRepo } from './services/api';
 import { Loader2 } from 'lucide-react';
 
@@ -22,18 +23,20 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [cbomReport, setCbomReport] = useState(null);
+  const [cbomReport, setCbomReport] = useState(defaultBaselineCBOM);
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [initialLoading, setInitialLoading] = useState(false);
 
-  // Seamlessly populate default cryptographic baseline on mount so the user never has to provide initial input
+  // Refresh live baseline in background if backend is reachable
   useEffect(() => {
     scanSampleRepo('banking-payment-gateway')
       .then((data) => {
-        setCbomReport(data);
+        if (data && data.assets && data.assets.length > 0) {
+          setCbomReport(data);
+        }
       })
-      .catch((err) => {
-        console.error('Cryptographic baseline initialization:', err);
+      .catch(() => {
+        // Seamless fallback to bundled default baseline
       });
   }, []);
 
