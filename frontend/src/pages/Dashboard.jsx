@@ -643,30 +643,36 @@ export default function Dashboard({ cbomReport, onNavigate, onSelectAsset }) {
         />
       </div>
 
-      {/* 6. STRATEGIC PLANNING ROW: HNDL Timeline + Migration Readiness + Risk Trend */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* 6. STRATEGIC MIGRATION & THREAT INTELLIGENCE ROW (2 Balanced Columns) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
         
-        {/* Module 1: Mosca / HNDL Visual Timeline */}
-        <HNDLTimelineVisual 
-          cbomReport={cbomReport}
-          onNavigate={onNavigate}
-        />
+        {/* Left Column: Mosca / HNDL Visual Timeline */}
+        <div className="flex flex-col h-full">
+          <HNDLTimelineVisual 
+            cbomReport={cbomReport}
+            onNavigate={onNavigate}
+          />
+        </div>
 
-        {/* Module 2: Migration Readiness Step Visual */}
-        <MigrationReadinessVisual 
-          cbomReport={cbomReport}
-          onNavigate={onNavigate}
-        />
+        {/* Right Column: Migration Readiness Step Visual */}
+        <div className="flex flex-col h-full">
+          <MigrationReadinessVisual 
+            cbomReport={cbomReport}
+            onNavigate={onNavigate}
+          />
+        </div>
 
-        {/* Module 3: Quantum Risk Trend Line Chart */}
+      </div>
+
+      {/* 7. FULL-WIDTH QUANTUM RISK TRAJECTORY & SURVEILLANCE TREND */}
+      <div className="w-full">
         <QuantumRiskTrend 
           cbomReport={cbomReport}
           onNavigate={onNavigate}
         />
-
       </div>
 
-      {/* 7. PRIORITY REMEDIATION BACKLOG */}
+      {/* 8. PRIORITY REMEDIATION BACKLOG */}
       <div className="p-6 rounded-2xl command-card space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#1E2D4A]">
           <div>
