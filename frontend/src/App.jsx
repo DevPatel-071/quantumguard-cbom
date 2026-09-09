@@ -15,30 +15,15 @@ import ContinuousMonitoring from './pages/ContinuousMonitoring';
 import Recommendations from './pages/Recommendations';
 import KnowledgeBaseExplorer from './pages/KnowledgeBaseExplorer';
 import Reports from './pages/Reports';
-import defaultBaselineCBOM from './services/defaultBaselineCBOM.json';
-import { scanSampleRepo } from './services/api';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [cbomReport, setCbomReport] = useState(defaultBaselineCBOM);
+  const [cbomReport, setCbomReport] = useState(null);
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [initialLoading, setInitialLoading] = useState(false);
-
-  // Refresh live baseline in background if backend is reachable
-  useEffect(() => {
-    scanSampleRepo('banking-payment-gateway')
-      .then((data) => {
-        if (data && data.assets && data.assets.length > 0) {
-          setCbomReport(data);
-        }
-      })
-      .catch(() => {
-        // Seamless fallback to bundled default baseline
-      });
-  }, []);
 
   const handleScanComplete = (newReport) => {
     setCbomReport(newReport);

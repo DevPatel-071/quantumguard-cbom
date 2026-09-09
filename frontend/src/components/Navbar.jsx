@@ -3,7 +3,7 @@ import { Database, Lock, RefreshCw, Bell, Shield, Search, Terminal, Activity, Cp
 
 export default function Navbar({ activeScan, onNewScanClick, onOpenMonitoring }) {
   const unreadAlerts = activeScan?.monitoring_summary?.unread_alerts_count || 0;
-  const targetName = activeScan?.scan_summary?.target_name || 'No Target Ingested';
+  const targetName = activeScan?.scan_summary?.target_name || 'Ready to Ingest';
 
   return (
     <header className="h-16 border-b border-command-border/80 bg-command-bg/95 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none shadow-2xl">
@@ -40,11 +40,11 @@ export default function Navbar({ activeScan, onNewScanClick, onOpenMonitoring })
       <div className="hidden lg:flex items-center gap-4 bg-command-surface/90 border border-command-border rounded-xl px-4 py-1.5 text-xs text-slate-300 shadow-command-card">
         <div className="flex items-center gap-2 font-mono">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${activeScan ? 'bg-emerald-400' : 'bg-cyan-400'} opacity-75`}></span>
+            <span className={`relative inline-flex rounded-full h-2 w-2 ${activeScan ? 'bg-emerald-500' : 'bg-cyan-500'}`}></span>
           </span>
           <span className="text-slate-400 text-[11px]">TARGET:</span>
-          <span className="font-bold text-white tracking-wide truncate max-w-[160px]">
+          <span className={`font-bold tracking-wide truncate max-w-[180px] ${activeScan ? 'text-white' : 'text-cyan-300'}`}>
             {targetName}
           </span>
         </div>
