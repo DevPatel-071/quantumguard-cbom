@@ -28,8 +28,11 @@ import {
   scanFolderUpload, 
   scanGitRepo, 
   scanLocalPath, 
-  scanRawCode 
+  scanRawCode,
+  registerMonitoringSource 
 } from '../services/api';
+import ConsentDialog from '../components/ConsentDialog';
+import ScanLoadingModal from '../components/ScanLoadingModal';
 
 export default function ScanStudio({ onScanComplete }) {
   const [samples, setSamples] = useState([]);
@@ -37,6 +40,8 @@ export default function ScanStudio({ onScanComplete }) {
   const [scanMode, setScanMode] = useState('folder'); // 'folder' | 'zip' | 'git' | 'local' | 'sample' | 'raw'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showConsent, setShowConsent] = useState(false);
+  const [showScanLoading, setShowScanLoading] = useState(false);
   
   // Customization Context
   const [contextConfig, setContextConfig] = useState({
@@ -112,11 +117,46 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
     }
   };
 
-  const runScan = async () => {
+  const getTargetDisplayName = () => {
+    if (scanMode === 'folder') return folderName || 'Selected Folder';
+    if (scanMode === 'zip') return zipFile?.name || 'Uploaded Archive';
+    if (scanMode === 'git') return gitUrl || 'Git Repository';
+    if (scanMode === 'local') return localPath || 'Local Directory';
+    if (scanMode === 'sample') {
+      const sample = samples.find(s => s.id === selectedSample);
+      return sample ? sample.name : 'Sample Suite';
+    }
+    return 'Raw Code Snippet';
+  };
+
+  const handleInitiateScan = () => {
+    setError(null);
+    if (scanMode === 'folder' && folderFiles.length === 0) {
+      setError('Please select a folder to upload and scan.');
+      return;
+    }
+    if (scanMode === 'zip' && !zipFile) {
+      setError('Please select a ZIP or TAR archive to upload.');
+      return;
+    }
+    if (scanMode === 'git' && !gitUrl.trim()) {
+      setError('Please enter a valid Git repository URL.');
+      return;
+    }
+    if (scanMode === 'local' && !localPath.trim()) {
+      setError('Please specify an absolute local directory path.');
+      return;
+    }
+    setShowConsent(true);
+  };
+
+  const executeScan = async (isContinuous) => {
+    setShowConsent(false);
+    setShowScanLoading(true);
     setLoading(true);
     setError(null);
     setTelemetryLogs([
-      "Initializing static analysis pipeline...",
+      "Initializing QUANTECT static analysis pipeline...",
       "Configuring cryptographic knowledge base (30+ algorithms & NIST PQC standards)..."
     ]);
 
@@ -125,9 +165,6 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
       
       // 1. Folder Upload
       if (scanMode === 'folder') {
-        if (folderFiles.length === 0) {
-          throw new Error('Please select a folder to upload and scan.');
-        }
         setTelemetryLogs(prev => [
           ...prev, 
           `Packaging folder '${folderName}' (${folderFiles.length} files) with preserved directory trees...`,
@@ -138,7 +175,6 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
         const paths = [];
         folderFiles.forEach((file) => {
           formData.append('files', file);
-          paths.append ? null : null;
           paths.push(file.webkitRelativePath || file.name);
         });
         formData.append('paths', JSON.stringify(paths));
@@ -157,9 +193,6 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
 
       // 2. ZIP / Archive Upload
       else if (scanMode === 'zip') {
-        if (!zipFile) {
-          throw new Error('Please select a ZIP or TAR archive to upload.');
-        }
         setTelemetryLogs(prev => [
           ...prev,
           `Uploading archive '${zipFile.name}' (${(zipFile.size / 1024).toFixed(1)} KB)...`,
@@ -182,9 +215,6 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
 
       // 3. Git Repository URL
       else if (scanMode === 'git') {
-        if (!gitUrl.trim()) {
-          throw new Error('Please enter a valid Git repository URL.');
-        }
         setTelemetryLogs(prev => [
           ...prev,
           `Cloning remote repository: ${gitUrl} (branch: ${gitBranch || 'default'})...`,
@@ -208,9 +238,6 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
 
       // 4. Local System Path
       else if (scanMode === 'local') {
-        if (!localPath.trim()) {
-          throw new Error('Please specify an absolute directory path on your system.');
-        }
         setTelemetryLogs(prev => [
           ...prev,
           `Accessing local directory path: ${localPath}...`,
@@ -259,21 +286,39 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
         });
       }
 
+      // Register continuous monitoring if chosen
+      if (isContinuous) {
+        try {
+          await registerMonitoringSource({
+            name: getTargetDisplayName(),
+            source_type: scanMode.toUpperCase(),
+            target_path: scanMode === 'git' ? gitUrl : scanMode === 'local' ? localPath : getTargetDisplayName(),
+            total_assets: result.scan_summary?.crypto_assets_count || 0,
+            critical_count: result.scan_summary?.critical_risk_count || 0
+          });
+        } catch (mErr) {
+          console.warn('Monitoring registration notice:', mErr);
+        }
+      }
+
       setTelemetryLogs(prev => [
         ...prev,
         `Discovered ${result.scan_summary.crypto_assets_count} cryptographic assets across ${result.scan_summary.files_scanned} files.`,
         "Evaluating Mosca's Theorem (X + Y > Z) and quantum threat matrices...",
         "Generating CycloneDX 1.6 compliant CBOM...",
+        "Synthesizing Quantum FMEA, Dependency Intelligence & Migration Roadmap...",
         "Scan completed successfully!"
       ]);
 
       setTimeout(() => {
+        setShowScanLoading(false);
         setLoading(false);
         onScanComplete(result);
-      }, 600);
+      }, 1000);
 
     } catch (err) {
       setError(err.message || 'Scan execution failed.');
+      setShowScanLoading(false);
       setLoading(false);
     }
   };
@@ -729,9 +774,9 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
       {/* Action Button */}
       <div className="flex justify-end">
         <button
-          onClick={runScan}
+          onClick={handleInitiateScan}
           disabled={loading}
-          className="px-8 py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 hover:from-sky-400 hover:to-purple-500 text-white shadow-xl shadow-sky-500/20 disabled:opacity-50 flex items-center gap-3 transition"
+          className="px-8 py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white shadow-xl shadow-cyan-500/20 disabled:opacity-50 flex items-center gap-3 transition"
         >
           {loading ? (
             <>
@@ -746,6 +791,20 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
           )}
         </button>
       </div>
+
+      {/* User Consent Dialog */}
+      <ConsentDialog
+        isOpen={showConsent}
+        targetName={getTargetDisplayName()}
+        onConfirm={(isContinuous) => executeScan(isContinuous)}
+        onCancel={() => setShowConsent(false)}
+      />
+
+      {/* Scan Loading Modal */}
+      <ScanLoadingModal
+        isOpen={showScanLoading}
+        targetName={getTargetDisplayName()}
+      />
 
     </div>
   );

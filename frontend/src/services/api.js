@@ -1,4 +1,4 @@
-// API Service for QuantumGuard CBOM Platform
+// API Service for QUANTECT Platform
 const BASE_URL = '/api';
 
 export async function fetchHealth() {
@@ -125,6 +125,60 @@ export async function simulateCostEstimate(payload) {
   return res.json();
 }
 
+export async function fetchDependencies(assets, appName = "Enterprise Application") {
+  const res = await fetch(`${BASE_URL}/dependencies`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ assets, application_name: appName })
+  });
+  if (!res.ok) throw new Error('Failed to build dependency graph');
+  return res.json();
+}
+
+export async function fetchFMEAAnalysis(assets) {
+  const res = await fetch(`${BASE_URL}/fmea`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ assets })
+  });
+  if (!res.ok) throw new Error('Failed to compute FMEA matrix');
+  return res.json();
+}
+
+export async function fetchMonitoringSummary() {
+  const res = await fetch(`${BASE_URL}/monitoring/summary`);
+  if (!res.ok) throw new Error('Failed to fetch monitoring summary');
+  return res.json();
+}
+
+export async function registerMonitoringSource(payload) {
+  const res = await fetch(`${BASE_URL}/monitoring/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Failed to register monitoring source');
+  return res.json();
+}
+
+export async function updateMonitoringStatus(sourceId, status) {
+  const res = await fetch(`${BASE_URL}/monitoring/sources/${sourceId}/status`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  if (!res.ok) throw new Error('Failed to update monitoring status');
+  return res.json();
+}
+
+export async function markAlertRead(alertId) {
+  const res = await fetch(`${BASE_URL}/monitoring/alerts/${alertId}/read`, {
+    method: 'POST'
+  });
+  if (!res.ok) throw new Error('Failed to mark alert as read');
+  return res.json();
+}
+
 export async function fetchKnowledgeBase(query = '') {
   const url = query ? `${BASE_URL}/kb?query=${encodeURIComponent(query)}` : `${BASE_URL}/kb`;
   const res = await fetch(url);
@@ -200,7 +254,7 @@ export async function downloadMigrationPlanHtml(cbomReport) {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `migration_plan_${cbomReport.scan_summary.scan_id || 'export'}.html`;
+  a.download = `quantect_migration_plan_${cbomReport.scan_summary.scan_id || 'export'}.html`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -217,7 +271,7 @@ export async function downloadMigrationPlanJson(cbomReport) {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `migration_plan_${cbomReport.scan_summary.scan_id || 'export'}.json`;
+  a.download = `quantect_migration_plan_${cbomReport.scan_summary.scan_id || 'export'}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();

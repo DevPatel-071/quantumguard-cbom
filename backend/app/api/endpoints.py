@@ -31,6 +31,9 @@ from app.cost_estimator.cost_engine import cost_engine
 from app.latency_simulator.latency_engine import latency_engine
 from app.reporting.report_generator import report_generator
 from app.reporting.migration_plan_generator import migration_plan_generator
+from app.fmea.fmea_engine import fmea_engine
+from app.dependency_intelligence.dependency_engine import dependency_engine
+from app.monitoring.monitoring_engine import monitoring_engine, MonitoringStatus
 
 router = APIRouter()
 
@@ -546,3 +549,68 @@ def export_report_html(cbom: CBOMReport):
         media_type="text/html",
         headers={"Content-Disposition": f"attachment; filename=audit_report_{cbom.scan_summary.scan_id}.html"}
     )
+
+# -------------------------------------------------------------
+# DEPENDENCY INTELLIGENCE ENDPOINT
+# -------------------------------------------------------------
+class DependencyGraphRequest(BaseModel):
+    assets: List[CBOMAsset]
+    application_name: Optional[str] = "Enterprise Application"
+
+@router.post("/dependencies")
+def get_dependency_graph(req: DependencyGraphRequest):
+    graph = dependency_engine.build_graph(req.assets, req.application_name or "Enterprise Application")
+    return graph
+
+# -------------------------------------------------------------
+# QUANTUM FMEA ENDPOINT
+# -------------------------------------------------------------
+class FMEARequest(BaseModel):
+    assets: List[CBOMAsset]
+
+@router.post("/fmea")
+def get_fmea_analysis(req: FMEARequest):
+    fmea_summary = fmea_engine.analyze_portfolio(req.assets)
+    return fmea_summary
+
+# -------------------------------------------------------------
+# CONTINUOUS MONITORING & ALERTS ENDPOINTS
+# -------------------------------------------------------------
+class RegisterMonitoringRequest(BaseModel):
+    name: str
+    source_type: str = "DIRECTORY"
+    target_path: str
+    total_assets: int = 0
+    critical_count: int = 0
+
+class UpdateMonitoringStatusRequest(BaseModel):
+    status: str # "ACTIVE", "PAUSED", "DISABLED"
+
+@router.get("/monitoring/summary")
+def get_monitoring_summary():
+    return monitoring_engine.get_summary()
+
+@router.post("/monitoring/register")
+def register_monitoring_source(req: RegisterMonitoringRequest):
+    src = monitoring_engine.register_source(
+        name=req.name,
+        source_type=req.source_type,
+        target_path=req.target_path,
+        total_assets=req.total_assets,
+        critical_count=req.critical_count
+    )
+    return src
+
+@router.post("/monitoring/sources/{source_id}/status")
+def update_monitoring_source_status(source_id: str, req: UpdateMonitoringStatusRequest):
+    st = MonitoringStatus(req.status.upper())
+    updated = monitoring_engine.set_source_status(source_id, st)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Monitored source not found")
+    return updated
+
+@router.post("/monitoring/alerts/{alert_id}/read")
+def mark_alert_read(alert_id: str):
+    monitoring_engine.mark_alert_read(alert_id)
+    return {"status": "success", "alert_id": alert_id}
+

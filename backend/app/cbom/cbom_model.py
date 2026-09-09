@@ -37,6 +37,17 @@ class RoadmapPhaseType(str, Enum):
     PHASE_3_PLANNED = "PHASE_3_PLANNED"
     PHASE_4_MONITOR = "PHASE_4_MONITOR"
 
+class FMEAPriority(str, Enum):
+    CRITICAL = "CRITICAL"
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+
+class MonitoringStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    PAUSED = "PAUSED"
+    DISABLED = "DISABLED"
+
 class MoscaAssessment(BaseModel):
     x_data_lifetime: float = Field(..., description="Years data must remain confidential/valid")
     y_migration_time: float = Field(..., description="Years required to complete PQC migration")
@@ -51,6 +62,41 @@ class RiskFactorScore(BaseModel):
     factor_name: str
     score_points: float
     description: str
+
+class FMEARecord(BaseModel):
+    asset_id: str
+    algorithm: str
+    failure_mode: str
+    potential_effect: str
+    severity: int = Field(..., ge=1, le=10, description="Severity (1-10) of operational/security impact")
+    occurrence: int = Field(..., ge=1, le=10, description="Occurrence (1-10) based on observable system exposure & data lifetime")
+    detection: int = Field(..., ge=1, le=10, description="Detection (1-10) difficulty in identifying cryptographic misuse")
+    rpn: int = Field(..., ge=1, le=1000, description="Risk Priority Number: Severity * Occurrence * Detection")
+    priority: FMEAPriority
+    why_this_rpn: str
+    prevention_control: str
+
+class DependencyNode(BaseModel):
+    id: str
+    label: str
+    node_type: str # "APPLICATION", "FILE", "LIBRARY", "CAPABILITY", "ALGORITHM"
+    risk_level: Optional[RiskLevel] = None
+    quantum_vulnerable: bool = False
+    details: Optional[str] = None
+    depth: int = 0
+
+class DependencyEdge(BaseModel):
+    source: str
+    target: str
+    relationship: str # "CONTAINS", "IMPORTS", "PROVIDES", "EXECUTES"
+
+class DependencyGraph(BaseModel):
+    nodes: List[DependencyNode] = []
+    edges: List[DependencyEdge] = []
+    total_packages: int = 0
+    direct_dependencies_count: int = 0
+    transitive_dependencies_count: int = 0
+    vulnerable_packages_count: int = 0
 
 class CBOMAsset(BaseModel):
     asset_id: str
@@ -90,7 +136,7 @@ class CBOMAsset(BaseModel):
     migration_priority: int = 999
     migration_reason: Optional[str] = None
     
-    # New Migration Decision & Roadmap fields
+    # Migration Decision & Roadmap fields
     migration_phase: RoadmapPhaseType = RoadmapPhaseType.PHASE_3_PLANNED
     phase_label: str = "Phase 3: Planned Migration"
     suggested_action: str = "Schedule algorithm refactoring in upcoming release."
@@ -101,6 +147,54 @@ class CBOMAsset(BaseModel):
     latency_impact: str = "LOW" # MINIMAL | LOW | MODERATE | SIGNIFICANT
     bandwidth_impact: str = "LOW (+1.1 KB)"
     status: str = "DISCOVERED"
+
+    # Dependency & FMEA extensions
+    fmea: Optional[FMEARecord] = None
+    dependencies: List[str] = []
+    upstream_package: Optional[str] = None
+    downstream_usage: List[str] = []
+
+class FMEASummary(BaseModel):
+    total_assessed: int
+    critical_rpn_count: int
+    high_rpn_count: int
+    medium_rpn_count: int
+    low_rpn_count: int
+    average_rpn: float
+    max_rpn: int
+    records: List[FMEARecord] = []
+
+class MonitoredSource(BaseModel):
+    source_id: str
+    name: str
+    source_type: str # "DIRECTORY", "GIT_REPO", "SAMPLE"
+    target_path_or_url: str
+    status: MonitoringStatus = MonitoringStatus.ACTIVE
+    registered_at: str
+    last_scanned_at: str
+    scan_interval_minutes: int = 60
+    total_assets_tracked: int = 0
+    critical_risks_tracked: int = 0
+    changes_detected_count: int = 0
+
+class MonitoringAlert(BaseModel):
+    alert_id: str
+    source_id: str
+    timestamp: str
+    severity: str # "CRITICAL", "HIGH", "MEDIUM", "INFORMATIONAL"
+    alert_type: str # "NEW_CRYPTO_ASSET", "DEPENDENCY_CHANGED", "RISK_ELEVATED", "HNDL_THRESHOLD_BREACHED", "CBOM_SYNC"
+    title: str
+    message: str
+    asset_id: Optional[str] = None
+    is_read: bool = False
+
+class MonitoringSummary(BaseModel):
+    is_monitoring_enabled: bool = True
+    active_sources_count: int = 1
+    total_changes_detected: int = 0
+    unread_alerts_count: int = 0
+    sources: List[MonitoredSource] = []
+    recent_alerts: List[MonitoringAlert] = []
 
 class ReadinessFactor(BaseModel):
     factor_id: str
@@ -200,4 +294,7 @@ class CBOMReport(BaseModel):
     readiness_assessment: Optional[QuantumReadinessAssessment] = None
     roadmap_report: Optional[RoadmapReport] = None
     cost_summary: Optional[CostEstimationSummary] = None
+    fmea_summary: Optional[FMEASummary] = None
+    dependency_graph: Optional[DependencyGraph] = None
+    monitoring_summary: Optional[MonitoringSummary] = None
     metadata: Dict[str, Any] = {}

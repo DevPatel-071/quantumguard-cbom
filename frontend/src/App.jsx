@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import SplashScreen from './components/SplashScreen';
 import AssetDetailDrawer from './components/AssetDetailDrawer';
 import Dashboard from './pages/Dashboard';
 import ScanStudio from './pages/ScanStudio';
 import CBOMInventory from './pages/CBOMInventory';
+import DependencyIntelligence from './pages/DependencyIntelligence';
+import FMEAAnalysis from './pages/FMEAAnalysis';
 import MigrationRoadmap from './pages/MigrationRoadmap';
 import QuantumReadiness from './pages/QuantumReadiness';
 import SimulatorsLab from './pages/SimulatorsLab';
+import ContinuousMonitoring from './pages/ContinuousMonitoring';
 import Recommendations from './pages/Recommendations';
 import KnowledgeBaseExplorer from './pages/KnowledgeBaseExplorer';
 import Reports from './pages/Reports';
@@ -15,6 +19,8 @@ import { scanSampleRepo } from './services/api';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [cbomReport, setCbomReport] = useState(null);
   const [selectedAsset, setSelectedAsset] = useState(null);
@@ -42,32 +48,50 @@ export default function App() {
     setCbomReport(updatedReport);
   };
 
+  const handleSelectAssetById = (assetId) => {
+    if (cbomReport?.assets) {
+      const found = cbomReport.assets.find(a => a.asset_id === assetId);
+      if (found) {
+        setSelectedAsset(found);
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-slate-100 flex flex-col font-sans">
-      {/* Top Navbar */}
+    <div className="min-h-screen bg-[#070B14] text-slate-100 flex flex-col font-sans">
+      
+      {/* 1. Opening Splash Screen */}
+      {showSplash && (
+        <SplashScreen onFinish={() => setShowSplash(false)} />
+      )}
+
+      {/* 2. Top Command Center Navbar */}
       <Navbar
         activeScan={cbomReport}
         onNewScanClick={() => setActiveTab('scan')}
+        onOpenMonitoring={() => setActiveTab('monitoring')}
       />
 
-      {/* Main Layout */}
+      {/* 3. Main Workspace Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar */}
+        
+        {/* Collapsible Left Sidebar */}
         <Sidebar
           activeTab={activeTab}
           onSelectTab={setActiveTab}
           assetCount={cbomReport?.assets?.length || 0}
-          urgentCount={cbomReport?.scan_summary?.mosca_urgent_count || 0}
           readinessScore={cbomReport?.readiness_assessment?.overall_score ?? null}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
 
         {/* Center Content View */}
-        <main className="flex-1 overflow-y-auto bg-[#0B0F19]/40">
+        <main className="flex-1 overflow-y-auto bg-[#070B14]/60">
           {initialLoading ? (
             <div className="h-full flex flex-col items-center justify-center p-12 space-y-4">
-              <Loader2 className="w-8 h-8 animate-spin text-sky-400" />
+              <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
               <p className="text-xs text-slate-400 font-mono">
-                Initializing Post-Quantum Migration Decision Core & Scanning Demo Suite...
+                Initializing QUANTECT Command Center & Discovering Cryptographic Baseline...
               </p>
             </div>
           ) : (
@@ -88,6 +112,20 @@ export default function App() {
 
               {activeTab === 'cbom' && (
                 <CBOMInventory
+                  cbomReport={cbomReport}
+                  onSelectAsset={setSelectedAsset}
+                />
+              )}
+
+              {activeTab === 'dependencies' && (
+                <DependencyIntelligence
+                  cbomReport={cbomReport}
+                  onSelectAsset={setSelectedAsset}
+                />
+              )}
+
+              {activeTab === 'fmea' && (
+                <FMEAAnalysis
                   cbomReport={cbomReport}
                   onSelectAsset={setSelectedAsset}
                 />
@@ -114,6 +152,14 @@ export default function App() {
                 />
               )}
 
+              {activeTab === 'monitoring' && (
+                <ContinuousMonitoring
+                  cbomReport={cbomReport}
+                  onNavigateToCBOM={() => setActiveTab('cbom')}
+                  onSelectAssetId={handleSelectAssetById}
+                />
+              )}
+
               {activeTab === 'recommendations' && (
                 <Recommendations />
               )}
@@ -132,13 +178,14 @@ export default function App() {
         </main>
       </div>
 
-      {/* Detail Drawer Modal */}
+      {/* 4. Unified Asset Detail Inspector Drawer */}
       {selectedAsset && (
         <AssetDetailDrawer
           asset={selectedAsset}
           onClose={() => setSelectedAsset(null)}
         />
       )}
+
     </div>
   );
 }

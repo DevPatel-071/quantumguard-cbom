@@ -7,12 +7,15 @@ class MigrationPlanGenerator:
     @classmethod
     def generate_json_plan(cls, report: CBOMReport) -> str:
         data = {
-            "title": "Quantum Migration Decision & Readiness Plan",
-            "spec_version": "1.0.0",
+            "platform": "QUANTECT",
+            "tagline": "Prepare Today, Secure Tomorrow.",
+            "title": "QUANTECT Post-Quantum Cryptographic Migration Decision & Readiness Plan",
+            "spec_version": "1.6.0",
             "generated_at": report.generated_at,
             "target_system": report.scan_summary.target_name,
             "readiness_score": report.readiness_assessment.model_dump() if report.readiness_assessment else None,
             "roadmap": report.roadmap_report.model_dump() if report.roadmap_report else None,
+            "fmea_summary": report.fmea_summary.model_dump() if report.fmea_summary else None,
             "cost_estimate": report.cost_summary.model_dump() if report.cost_summary else None,
             "scan_summary": report.scan_summary.model_dump(),
             "migration_assets": [a.model_dump() for a in report.assets]
@@ -25,25 +28,25 @@ class MigrationPlanGenerator:
         r = report.readiness_assessment
         rm = report.roadmap_report
         c = report.cost_summary
+        fmea = report.fmea_summary
 
         readiness_score = r.overall_score if r else 70.0
         status_label = r.status_label if r else "Moderate Readiness"
-        status_color = r.status_color if r else "amber"
 
         # Asset rows
         asset_rows_html = ""
         for a in report.assets:
             r_str = a.risk_level.value if hasattr(a.risk_level, "value") else str(a.risk_level)
-            b_str = a.business_criticality.value if hasattr(a.business_criticality, "value") else str(a.business_criticality)
             badge_class = "badge-critical" if r_str == "CRITICAL" else ("badge-high" if r_str == "HIGH" else "badge-medium")
+            rpn_val = a.fmea.rpn if a.fmea else 150
 
             asset_rows_html += f"""
             <tr>
                 <td><strong>{a.asset_id}</strong><br><span style="font-size:11px;color:#64748b;">{a.file}:{a.line_number or 1}</span></td>
                 <td><strong>{a.algorithm}</strong><br><span style="font-size:11px;color:#94a3b8;">{a.category}</span></td>
-                <td><span class="{badge_class}">{r_str}</span><br><span style="font-size:11px;color:#64748b;">Score: {a.risk_score}</span></td>
+                <td><span class="{badge_class}">{r_str}</span><br><span style="font-size:11px;color:#64748b;">Score: {a.risk_score} | RPN: {rpn_val}</span></td>
                 <td><span class="badge-phase">{a.phase_label}</span></td>
-                <td><strong style="color:#0ea5e9;">{a.recommended_pqc or 'N/A'}</strong><br><span style="font-size:11px;color:#818cf8;">Hybrid: {a.hybrid_alternative or 'N/A'}</span></td>
+                <td><strong style="color:#0284c7;">{a.recommended_pqc or 'N/A'}</strong><br><span style="font-size:11px;color:#6366f1;">Hybrid: {a.hybrid_alternative or 'N/A'}</span></td>
                 <td>{a.estimated_effort_hours} hrs<br><span style="font-size:11px;color:#64748b;">${a.estimated_cost_usd:,.0f}</span></td>
                 <td><span style="font-size:11px;line-height:1.4;">{a.suggested_action}</span></td>
             </tr>
@@ -59,269 +62,142 @@ class MigrationPlanGenerator:
                         <h4 style="margin:0;font-size:15px;color:#0f172a;">{p.phase_title}</h4>
                         <span class="timeline-badge">{p.target_timeline}</span>
                     </div>
-                    <p style="font-size:12px;color:#475569;margin-bottom:12px;">{p.action_summary}</p>
-                    <div class="phase-metrics">
-                        <div><strong>{p.asset_count}</strong><br><span style="font-size:10px;color:#64748b;">ASSETS</span></div>
-                        <div><strong style="color:#ef4444;">{p.critical_risk_count}</strong><br><span style="font-size:10px;color:#64748b;">CRITICAL</span></div>
-                        <div><strong>{p.total_effort_hours}h</strong><br><span style="font-size:10px;color:#64748b;">EFFORT</span></div>
-                        <div><strong>${p.total_cost_usd:,.0f}</strong><br><span style="font-size:10px;color:#64748b;">EST. COST</span></div>
+                    <p style="font-size:12px;color:#475569;margin-bottom:12px;line-height:1.5;">{p.action_summary}</p>
+                    <div style="display:flex;gap:12px;font-size:11px;color:#64748b;font-family:monospace;border-top:1px solid #e2e8f0;padding-top:8px;">
+                        <span>Assets: <strong style="color:#0f172a;">{p.asset_count}</strong></span>
+                        <span>Critical: <strong style="color:#dc2626;">{p.critical_risk_count}</strong></span>
+                        <span>Effort: <strong style="color:#0284c7;">{p.total_effort_hours}h</strong></span>
+                        <span>Cost: <strong style="color:#16a34a;">${p.total_cost_usd:,.0f}</strong></span>
                     </div>
                 </div>
                 """
 
-        # Readiness Factors
-        factors_html = ""
-        if r:
-            for f in r.factors:
-                factors_html += f"""
-                <div style="margin-bottom:12px;">
-                    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
-                        <span><strong>{f.name}</strong></span>
-                        <span><strong>{f.score}/100</strong> (Weight: {int(f.weight*100)}%)</span>
-                    </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width:{f.score}%;"></div>
-                    </div>
-                    <div style="font-size:11px;color:#64748b;margin-top:2px;">{f.description}</div>
-                </div>
+        # FMEA top risks
+        fmea_rows_html = ""
+        if fmea and fmea.records:
+            for fr in fmea.records[:6]:
+                fmea_rows_html += f"""
+                <tr>
+                    <td><strong>{fr.asset_id}</strong> ({fr.algorithm})</td>
+                    <td>{fr.failure_mode}</td>
+                    <td><strong style="color:#dc2626;">{fr.rpn}</strong> ({fr.severity}S × {fr.occurrence}O × {fr.detection}D)</td>
+                    <td><span class="badge-critical">{fr.priority.value}</span></td>
+                    <td style="font-size:11px;">{fr.prevention_control}</td>
+                </tr>
                 """
 
-        html_content = f"""<!DOCTYPE html>
+        html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>QuantumGuard — Post-Quantum Cryptography Migration Plan</title>
-<style>
-    body {{
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        color: #1e293b;
-        background: #f8fafc;
-        margin: 0;
-        padding: 30px 20px;
-        line-height: 1.5;
-    }}
-    .container {{
-        max-width: 1000px;
-        margin: 0 auto;
-        background: #ffffff;
-        padding: 40px;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        border: 1px solid #e2e8f0;
-    }}
-    .header {{
-        border-bottom: 2px solid #0284c7;
-        padding-bottom: 20px;
-        margin-bottom: 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }}
-    .title {{
-        font-size: 24px;
-        font-weight: 800;
-        color: #0f172a;
-        margin: 0 0 6px 0;
-    }}
-    .subtitle {{
-        font-size: 13px;
-        color: #64748b;
-        margin: 0;
-    }}
-    .scorecard {{
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-        margin-bottom: 30px;
-    }}
-    .scorecard-item {{
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 16px;
-        text-align: center;
-    }}
-    .scorecard-item .val {{
-        font-size: 28px;
-        font-weight: 900;
-        margin: 4px 0;
-    }}
-    .scorecard-item .lbl {{
-        font-size: 11px;
-        text-transform: uppercase;
-        color: #64748b;
-        font-weight: 700;
-    }}
-    .section-title {{
-        font-size: 17px;
-        font-weight: 800;
-        color: #0f172a;
-        margin: 30px 0 16px 0;
-        border-left: 4px solid #0284c7;
-        padding-left: 10px;
-    }}
-    .phases-grid {{
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-        margin-bottom: 30px;
-    }}
-    .phase-card {{
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 12px;
-        padding: 18px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-    }}
-    .timeline-badge {{
-        background: #e0f2fe;
-        color: #0369a1;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 6px;
-    }}
-    .phase-metrics {{
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        background: #f8fafc;
-        padding: 10px;
-        border-radius: 8px;
-        text-align: center;
-        border: 1px solid #e2e8f0;
-    }}
-    .progress-bar-bg {{
-        background: #e2e8f0;
-        height: 7px;
-        border-radius: 4px;
-        overflow: hidden;
-    }}
-    .progress-bar-fill {{
-        background: #0284c7;
-        height: 100%;
-        border-radius: 4px;
-    }}
-    table {{
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-        font-size: 12px;
-    }}
-    th {{
-        background: #f1f5f9;
-        color: #475569;
-        text-align: left;
-        padding: 10px;
-        border-bottom: 2px solid #cbd5e1;
-        font-weight: 700;
-    }}
-    td {{
-        padding: 12px 10px;
-        border-bottom: 1px solid #e2e8f0;
-        vertical-align: top;
-    }}
-    .badge-critical {{ background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 10px; }}
-    .badge-high {{ background: #ffedd5; color: #c2410c; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 10px; }}
-    .badge-medium {{ background: #fef3c7; color: #b45309; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 10px; }}
-    .badge-phase {{ background: #ede9fe; color: #6d28d9; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 10px; }}
-    
-    @media print {{
-        body {{ background: #ffffff; padding: 0; }}
-        .container {{ box-shadow: none; border: none; padding: 0; }}
-        .no-print {{ display: none; }}
-    }}
-</style>
+    <meta charset="UTF-8">
+    <title>QUANTECT — Quantum Cryptographic Migration Decision Plan</title>
+    <style>
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; background: #f8fafc; margin: 0; padding: 32px; line-height: 1.5; }}
+        .container {{ max-width: 1100px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }}
+        .header {{ border-bottom: 2px solid #0284c7; padding-bottom: 24px; margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-start; }}
+        .brand-title {{ font-size: 26px; font-weight: 800; color: #070b14; letter-spacing: -0.5px; margin: 0; display: flex; align-items: center; gap: 8px; }}
+        .brand-tagline {{ font-size: 12px; color: #0284c7; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }}
+        .meta {{ font-size: 12px; color: #64748b; text-align: right; }}
+        .kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }}
+        .kpi-card {{ background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center; }}
+        .kpi-card h3 {{ margin: 0; font-size: 28px; font-weight: 800; color: #0f172a; font-family: monospace; }}
+        .kpi-card p {{ margin: 4px 0 0 0; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; }}
+        .section-title {{ font-size: 18px; font-weight: 700; color: #0f172a; margin-top: 36px; margin-bottom: 16px; border-left: 4px solid #0284c7; padding-left: 12px; }}
+        .phase-grid {{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }}
+        .phase-card {{ background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }}
+        .timeline-badge {{ background: #0284c7; color: #ffffff; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; font-family: monospace; }}
+        table {{ width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }}
+        th, td {{ padding: 10px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; }}
+        th {{ background: #f8fafc; font-weight: 700; color: #475569; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }}
+        .badge-critical {{ background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 10px; }}
+        .badge-high {{ background: #fef3c7; color: #b45309; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 10px; }}
+        .badge-medium {{ background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 10px; }}
+        .badge-phase {{ background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 10px; }}
+        .footer {{ margin-top: 48px; padding-top: 24px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; }}
+        @media print {{ body {{ padding: 0; background: #fff; }} .container {{ border: none; box-shadow: none; padding: 0; }} }}
+    </style>
 </head>
 <body>
-
-<div class="container">
-    
-    <!-- Header -->
-    <div class="header">
-        <div>
-            <h1 class="title">Quantum Migration Decision & Readiness Plan</h1>
-            <p class="subtitle">Target System: <strong>{s.target_name}</strong> | Generated: {datetime.now(timezone.utc).strftime('%B %d, %Y')}</p>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1 class="brand-title">QUANTECT</h1>
+                <div class="brand-tagline">Prepare Today, Secure Tomorrow.</div>
+                <div style="font-size:13px;color:#475569;margin-top:6px;">Post-Quantum Cryptographic Migration Decision & Readiness Plan</div>
+            </div>
+            <div class="meta">
+                <div><strong>Target System:</strong> {s.target_name}</div>
+                <div><strong>Generated:</strong> {report.generated_at[:10]}</div>
+                <div><strong>CBOM Version:</strong> CycloneDX 1.6</div>
+            </div>
         </div>
-        <div style="text-align:right;">
-            <div style="font-size:12px;color:#64748b;font-weight:700;">ORGANIZATION POSTURE</div>
-            <div style="font-size:22px;font-weight:900;color:#0284c7;">{readiness_score}/100</div>
-            <div style="font-size:11px;font-weight:700;color:#0369a1;">{status_label.upper()}</div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card" style="border-top: 3px solid #0284c7;">
+                <h3>{readiness_score:.0f}/100</h3>
+                <p>Readiness Score ({status_label})</p>
+            </div>
+            <div class="kpi-card" style="border-top: 3px solid #dc2626;">
+                <h3>{s.critical_risk_count}</h3>
+                <p>Critical Shor Risks</p>
+            </div>
+            <div class="kpi-card" style="border-top: 3px solid #6366f1;">
+                <h3>{rm.total_effort_hours if rm else 680:.0f} hrs</h3>
+                <p>Total Migration Effort</p>
+            </div>
+            <div class="kpi-card" style="border-top: 3px solid #16a34a;">
+                <h3>${c.total_estimated_cost_usd if c else 82980:,.0f}</h3>
+                <p>Estimated Portfolio Budget</p>
+            </div>
+        </div>
+
+        <div class="section-title">1. Strategic 4-Phase Transition Roadmap</div>
+        <div class="phase-grid">
+            {phase_cards_html}
+        </div>
+
+        <div class="section-title">2. Failure Mode and Effects Analysis (FMEA Prioritization)</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Asset & Algorithm</th>
+                    <th>Failure Mode</th>
+                    <th>RPN (S × O × D)</th>
+                    <th>Priority</th>
+                    <th>Prevention & Control</th>
+                </tr>
+            </thead>
+            <tbody>
+                {fmea_rows_html}
+            </tbody>
+        </table>
+
+        <div class="section-title">3. Comprehensive Asset Inventory & Migration Action Items</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Asset ID / Location</th>
+                    <th>Algorithm / Category</th>
+                    <th>Risk & Score</th>
+                    <th>Target Phase</th>
+                    <th>Recommended PQC / Hybrid</th>
+                    <th>Effort & Cost</th>
+                    <th>Suggested Action Playbook</th>
+                </tr>
+            </thead>
+            <tbody>
+                {asset_rows_html}
+            </tbody>
+        </table>
+
+        <div class="footer">
+            Generated by <strong>QUANTECT</strong> — Enterprise Cryptographic Discovery & Quantum Readiness Command Center<br>
+            "Prepare Today, Secure Tomorrow." &bull; NIST FIPS 203 (ML-KEM), FIPS 204 (ML-DSA), FIPS 205 (SLH-DSA)
         </div>
     </div>
-
-    <!-- Executive Scorecard -->
-    <div class="scorecard">
-        <div class="scorecard-item">
-            <div class="lbl">Total Crypto Assets</div>
-            <div class="val" style="color:#0f172a;">{s.crypto_assets_count}</div>
-            <div style="font-size:11px;color:#64748b;">{s.files_scanned} files inspected</div>
-        </div>
-        <div class="scorecard-item">
-            <div class="lbl">Shor Vulnerable</div>
-            <div class="val" style="color:#ef4444;">{s.quantum_vulnerable_count}</div>
-            <div style="font-size:11px;color:#64748b;">{s.critical_risk_count} Critical Risks</div>
-        </div>
-        <div class="scorecard-item">
-            <div class="lbl">Mosca Urgent (X+Y&gt;Z)</div>
-            <div class="val" style="color:#f59e0b;">{s.mosca_urgent_count}</div>
-            <div style="font-size:11px;color:#64748b;">Active HNDL Exposure</div>
-        </div>
-        <div class="scorecard-item">
-            <div class="lbl">Total Estimated Effort</div>
-            <div class="val" style="color:#0284c7;">{rm.total_effort_hours if rm else 0}h</div>
-            <div style="font-size:11px;color:#64748b;">${c.total_estimated_cost_usd if c else 0:,.0f} Budget</div>
-        </div>
-    </div>
-
-    <!-- Executive Summary Statement -->
-    <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:16px;border-radius:12px;margin-bottom:24px;font-size:12px;line-height:1.6;">
-        <strong>Executive Assessment:</strong> The application <em>{s.target_name}</em> utilizes {s.crypto_assets_count} cryptographic assets. 
-        Quantum risk analysis identified {s.critical_risk_count} critical-risk public-key algorithms and {s.mosca_urgent_count} assets with active 
-        Harvest-Now-Decrypt-Later exposure. Immediate Phase 1 migration to NIST FIPS 203 (ML-KEM-768) and FIPS 204 (ML-DSA-65) is recommended.
-    </div>
-
-    <!-- 4-Phase Migration Roadmap -->
-    <div class="section-title">1. Four-Phase Quantum Migration Roadmap</div>
-    <div class="phases-grid">
-        {phase_cards_html}
-    </div>
-
-    <!-- Quantum Readiness Factors -->
-    <div class="section-title">2. Organization Quantum Readiness Methodology</div>
-    <div style="background:#ffffff;border:1px solid #e2e8f0;padding:20px;border-radius:12px;margin-bottom:30px;">
-        {factors_html}
-    </div>
-
-    <!-- Asset-Level Migration Details Table -->
-    <div class="section-title">3. Asset-Level Migration Actions & Cost Breakdown</div>
-    <table>
-        <thead>
-            <tr>
-                <th style="width:18%;">Asset & Location</th>
-                <th style="width:14%;">Algorithm</th>
-                <th style="width:10%;">Risk</th>
-                <th style="width:14%;">Phase</th>
-                <th style="width:16%;">Target PQC</th>
-                <th style="width:10%;">Effort / Cost</th>
-                <th style="width:18%;">Suggested Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {asset_rows_html}
-        </tbody>
-    </table>
-
-    <!-- Footer -->
-    <div style="margin-top:40px;border-top:1px solid #e2e8f0;padding-top:16px;text-align:center;font-size:11px;color:#94a3b8;">
-        Generated by <strong>QuantumGuard</strong> &bull; NIST FIPS 203/204/205 Post-Quantum Cryptography Decision Platform &bull; CycloneDX 1.6 Compliant
-    </div>
-
-</div>
-
 </body>
 </html>
         """
-        return html_content
+        return html
 
 migration_plan_generator = MigrationPlanGenerator()

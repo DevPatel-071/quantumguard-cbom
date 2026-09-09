@@ -18,6 +18,9 @@ from app.prioritization.priority_engine import priority_engine
 from app.roadmap.roadmap_engine import roadmap_engine
 from app.readiness.readiness_engine import readiness_engine
 from app.cost_estimator.cost_engine import cost_engine
+from app.fmea.fmea_engine import fmea_engine
+from app.dependency_intelligence.dependency_engine import dependency_engine
+from app.monitoring.monitoring_engine import monitoring_engine
 
 class CBOMGenerator:
 
@@ -128,7 +131,13 @@ class CBOMGenerator:
         # 5. Classify Migration Roadmap Phases & Enrich Assets
         enriched_assets, roadmap_rep = roadmap_engine.generate_roadmap(prioritized_assets)
 
-        # 6. Build Aggregated Metrics
+        # 6. Perform Quantum FMEA Assessment
+        fmea_summary = fmea_engine.analyze_portfolio(enriched_assets)
+
+        # 7. Construct Dependency Intelligence Graph
+        dep_graph = dependency_engine.build_graph(enriched_assets, application)
+
+        # 8. Build Aggregated Metrics
         algo_counts: Dict[str, int] = {}
         risk_dist = {"LOW": 0, "MEDIUM": 0, "HIGH": 0, "CRITICAL": 0}
         conf_dist = {
@@ -182,11 +191,14 @@ class CBOMGenerator:
             average_risk_score=avg_risk
         )
 
-        # 7. Evaluate Organization Quantum Readiness Score (0-100)
+        # 9. Evaluate Organization Quantum Readiness Score (0-100)
         readiness_assessment = readiness_engine.evaluate_readiness(enriched_assets, summary)
 
-        # 8. Calculate Financial & Effort Summary
+        # 10. Calculate Financial & Effort Summary
         cost_summary = cost_engine.calculate_portfolio_cost(enriched_assets)
+
+        # 11. Fetch Continuous Monitoring Status
+        monitoring_summary = monitoring_engine.get_summary()
 
         return CBOMReport(
             cbom_version="1.0.0",
@@ -197,7 +209,12 @@ class CBOMGenerator:
             readiness_assessment=readiness_assessment,
             roadmap_report=roadmap_rep,
             cost_summary=cost_summary,
+            fmea_summary=fmea_summary,
+            dependency_graph=dep_graph,
+            monitoring_summary=monitoring_summary,
             metadata={
+                "platform": "QUANTECT",
+                "tagline": "Prepare Today, Secure Tomorrow.",
                 "target_name": target_name,
                 "application": application,
                 "environment": environment,
