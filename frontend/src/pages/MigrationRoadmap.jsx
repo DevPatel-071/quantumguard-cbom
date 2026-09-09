@@ -190,12 +190,12 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
             return (
               <div
                 key={asset.asset_id}
-                className="p-5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-slate-300 transition flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                className="p-5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-slate-300 transition flex flex-col xl:flex-row xl:items-center justify-between gap-4"
               >
                 {/* Left: Asset Details */}
-                <div className="space-y-2 flex-1">
+                <div className="space-y-2 flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-blue-700">
+                    <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
                       #{asset.migration_priority} {asset.asset_id}
                     </span>
                     <span className="font-bold text-sm text-slate-900">
@@ -213,7 +213,7 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
                     </span>
                   </div>
 
-                  <div className="text-xs text-slate-500 font-mono">
+                  <div className="text-xs text-slate-500 font-mono truncate" title={`${asset.file}:${asset.line_number || 1}`}>
                     Location: <span className="text-indigo-700">{asset.file}:{asset.line_number || 1}</span> &bull; Criticality: {asset.business_criticality}
                   </div>
 
@@ -223,8 +223,8 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
                 </div>
 
                 {/* Right: Recommendation & Metrics */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 lg:border-l lg:border-slate-200 lg:pl-5 flex-shrink-0">
-                  <div className="space-y-1">
+                <div className="flex flex-wrap sm:flex-nowrap items-center justify-between xl:justify-end gap-4 pt-3 xl:pt-0 border-t xl:border-t-0 xl:border-l border-slate-200 xl:pl-5 flex-shrink-0">
+                  <div className="space-y-0.5">
                     <span className="text-[10px] font-semibold uppercase text-slate-400 block">
                       Target PQC Replacement
                     </span>
@@ -232,18 +232,18 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
                       {asset.recommended_pqc || 'ML-KEM-768'}
                     </div>
                     {asset.hybrid_alternative && (
-                      <div className="text-[11px] text-indigo-700 font-mono">
+                      <div className="text-[11px] text-indigo-700 font-mono truncate max-w-[180px]" title={asset.hybrid_alternative}>
                         Hybrid: {asset.hybrid_alternative}
                       </div>
                     )}
                   </div>
 
-                  <div className="space-y-1 text-right sm:border-l sm:border-slate-200 sm:pl-4">
+                  <div className="space-y-0.5 text-right sm:border-l sm:border-slate-200 sm:pl-4">
                     <span className="text-[10px] font-semibold uppercase text-slate-400 block text-left sm:text-right">
-                      Effort & Impact
+                      Effort &amp; Cost
                     </span>
                     <div className="text-xs font-mono font-bold text-slate-800 text-left sm:text-right">
-                      {asset.estimated_effort_hours} hrs &bull; <span className="text-emerald-700">${asset.estimated_cost_usd?.toLocaleString() || '2,400'}</span>
+                      {asset.estimated_effort_hours}h &bull; <span className="text-emerald-700">${asset.estimated_cost_usd?.toLocaleString() || '2,400'}</span>
                     </div>
                     <div className="text-[10px] font-mono text-slate-500 text-left sm:text-right">
                       Latency: <span className="text-amber-700 font-semibold">{asset.latency_impact}</span>
@@ -252,7 +252,7 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
 
                   <button
                     onClick={() => onSelectAsset(asset)}
-                    className="px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200 transition flex items-center gap-1.5 shadow-xs"
+                    className="px-3.5 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-blue-50 text-slate-800 hover:text-blue-700 border border-slate-200 hover:border-blue-300 transition flex items-center gap-1.5 shadow-xs flex-shrink-0"
                   >
                     <span>Inspect</span>
                     <ChevronRight className="w-3.5 h-3.5 text-slate-400" />

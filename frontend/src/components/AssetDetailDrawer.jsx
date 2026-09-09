@@ -20,7 +20,10 @@ export default function AssetDetailDrawer({ asset, onClose }) {
   const fmea = asset.fmea;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-xs flex justify-end animate-fadeIn">
+    <div 
+      className="fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-xs flex justify-end animate-fadeIn"
+      onClick={onClose}
+    >
       <div 
         className="w-full max-w-2xl bg-white border-l border-slate-200 h-full overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl relative text-slate-900"
         onClick={(e) => e.stopPropagation()}
@@ -57,21 +60,21 @@ export default function AssetDetailDrawer({ asset, onClose }) {
         </div>
 
         {/* Tab Selector */}
-        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 p-1 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold">
           {[
             { id: 'overview', label: 'Overview' },
-            { id: 'risk', label: 'Why Risky? (+pts)' },
+            { id: 'risk', label: 'Why Risky?' },
             { id: 'fmea', label: 'FMEA (RPN)' },
             { id: 'dependencies', label: 'Dependencies' },
-            { id: 'pqc', label: 'PQC & Migration' }
+            { id: 'pqc', label: 'PQC Plan' }
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-1.5 px-2 rounded-lg transition text-center ${
+              className={`py-2 px-2 rounded-lg transition text-center truncate ${
                 activeTab === tab.id
                   ? 'bg-white text-blue-700 font-bold border border-slate-200 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
               {tab.label}
