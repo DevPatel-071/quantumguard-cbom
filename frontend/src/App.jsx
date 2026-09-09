@@ -18,7 +18,7 @@ import Reports from './pages/Reports';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [cbomReport, setCbomReport] = useState(null);
