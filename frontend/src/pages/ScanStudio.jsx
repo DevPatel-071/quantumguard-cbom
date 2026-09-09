@@ -44,21 +44,21 @@ export default function ScanStudio({ onScanComplete }) {
   
   // Customization Context
   const [contextConfig, setContextConfig] = useState({
-    application: 'Core Payment & Settlement API',
+    application: '',
     environment: 'PRODUCTION',
     business_criticality: 'CRITICAL',
     exposure: 'INTERNET_FACING',
     data_sensitivity: 'CONFIDENTIAL',
-    data_lifetime_years: 15.0,
-    migration_time_years: 5.0,
-    quantum_timeline_years: 17.0
+    data_lifetime_years: 10.0,
+    migration_time_years: 3.0,
+    quantum_timeline_years: 15.0
   });
 
   // Mode States
   const [folderFiles, setFolderFiles] = useState([]);
   const [folderName, setFolderName] = useState('');
   const [zipFile, setZipFile] = useState(null);
-  const [gitUrl, setGitUrl] = useState('https://github.com/open-quantum-safe/liboqs.git');
+  const [gitUrl, setGitUrl] = useState('');
   const [gitBranch, setGitBranch] = useState('main');
   const [localPath, setLocalPath] = useState('');
   const [rawCodeSnippet, setRawCodeSnippet] = useState(`// Financial Authorization & Signature Module

@@ -19,25 +19,12 @@ import { scanSampleRepo } from './services/api';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [cbomReport, setCbomReport] = useState(null);
   const [selectedAsset, setSelectedAsset] = useState(null);
-  const [initialLoading, setInitialLoading] = useState(true);
-
-  // On mount, auto-load the primary demo repo
-  useEffect(() => {
-    scanSampleRepo('banking-payment-gateway')
-      .then((data) => {
-        setCbomReport(data);
-        setInitialLoading(false);
-      })
-      .catch((err) => {
-        console.error('Initial sample scan failed:', err);
-        setInitialLoading(false);
-      });
-  }, []);
+  const [initialLoading, setInitialLoading] = useState(false);
 
   const handleScanComplete = (newReport) => {
     setCbomReport(newReport);

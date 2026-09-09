@@ -30,87 +30,95 @@ export default function MigrationReadinessVisual({ cbomReport, onNavigate }) {
 
   const stages = [
     { 
-      name: 'Legacy Crypto', 
+      name: 'Legacy Cryptography', 
+      phaseTag: 'Phase 1 Action',
       count: legacyCount, 
       pct: Math.round((legacyCount / total) * 100), 
       color: '#EF4444', 
-      badgeBg: 'bg-rose-950/80',
+      badgeBg: 'bg-rose-950/90',
       badgeBorder: 'border-rose-700/60',
       badgeText: 'text-rose-300',
-      label: '🔴 Shor Vulnerable',
-      desc: 'RSA / ECC primitives requiring immediate transition.'
+      label: '🔴 Shor Vulnerable (RSA / ECC)',
+      desc: 'Classical asymmetric primitives broken by polynomial quantum prime factorization.'
     },
     { 
       name: 'Hybrid Candidates', 
+      phaseTag: 'Phase 2 Pilot',
       count: hybridCount, 
       pct: Math.round((hybridCount / total) * 100), 
       color: '#A855F7', 
-      badgeBg: 'bg-purple-950/80',
+      badgeBg: 'bg-purple-950/90',
       badgeBorder: 'border-purple-700/60',
       badgeText: 'text-purple-300',
-      label: '🟣 Dual Wrapper',
-      desc: 'X25519 + ML-KEM composite encapsulation candidates.'
+      label: '🟣 Dual Classical + PQC Wrapper',
+      desc: 'Composite X.509 certs & hybrid KEMs maintaining FIPS compliance & backwards compat.'
     },
     { 
-      name: 'PQC Ready', 
+      name: 'PQC Standardized', 
+      phaseTag: 'Phase 3 Target',
       count: pqcReadyCount, 
       pct: Math.round((pqcReadyCount / total) * 100), 
       color: '#00F0FF', 
-      badgeBg: 'bg-cyan-950/80',
+      badgeBg: 'bg-cyan-950/90',
       badgeBorder: 'border-cyan-700/60',
       badgeText: 'text-cyan-300',
-      label: '🔵 FIPS 203/204',
-      desc: 'Pure post-quantum NIST standardized algorithms.'
+      label: '🔵 NIST FIPS 203/204 Standards',
+      desc: 'Standardized ML-KEM-768 key encapsulation & ML-DSA-65 digital signatures.'
     },
     { 
       name: 'Validated Secure', 
+      phaseTag: 'Phase 4 Assurance',
       count: validatedCount, 
       pct: Math.round((validatedCount / total) * 100), 
       color: '#10B981', 
-      badgeBg: 'bg-emerald-950/80',
+      badgeBg: 'bg-emerald-950/90',
       badgeBorder: 'border-emerald-700/60',
       badgeText: 'text-emerald-300',
-      label: '🟢 Agility Validated',
-      desc: 'KAT verified and benchmarked against SLA latency.'
+      label: '🟢 Agility & KAT Validated',
+      desc: 'Known-Answer-Tests verified with latency SLA and continuous drift monitoring.'
     }
   ];
 
   return (
-    <div className="p-6 rounded-2xl command-card border-cyan-500/30 space-y-5 flex flex-col justify-between h-full relative overflow-hidden">
+    <div className="p-6 sm:p-7 rounded-2xl command-card border-cyan-500/30 space-y-6 relative overflow-hidden">
       {/* Glow highlight */}
-      <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#1E2D4A] pb-3 z-10">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-cyan-950/80 text-cyan-400 border border-cyan-500/40">
-            <Compass className="w-4 h-4" />
+      {/* Header Row */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1E2D4A] pb-4 z-10">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-cyan-950/80 text-cyan-400 border border-cyan-500/40 shadow-cyan-glow flex-shrink-0">
+            <Compass className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-mono text-xs font-bold text-white uppercase tracking-wider">
-              Portfolio Migration Progress
+            <h3 className="font-mono text-sm font-bold text-white uppercase tracking-wider">
+              Portfolio Migration Roadmap &amp; Readiness
             </h3>
-            <span className="text-[10px] font-mono text-slate-400">
-              Multi-Stage Cryptographic Transition Pipeline
-            </span>
+            <p className="text-xs font-mono text-slate-400">
+              Multi-Stage Cryptographic Transition Pipeline &amp; NIST PQC Standardization
+            </p>
           </div>
         </div>
 
-        <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-700/60 px-2.5 py-1 rounded-full flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-          <span>{pqcReadyCount} / {total} PQC Resilient</span>
-        </span>
+        <div className="flex-shrink-0">
+          <span className="text-xs font-mono text-emerald-300 font-bold bg-emerald-950/90 border border-emerald-700/60 px-3 py-1 rounded-full flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>PQC Ready: {pqcReadyCount} / {total} Assets ({Math.round((pqcReadyCount / total) * 100)}%)</span>
+          </span>
+        </div>
       </div>
 
       {/* Overall Progression Bar */}
-      <div className="p-3.5 rounded-xl bg-[#040814] border border-[#1E2D4A] space-y-2 z-10">
-        <div className="flex items-center justify-between text-[11px] font-mono">
-          <span className="text-slate-400">Migration Readiness Distribution</span>
-          <span className="font-bold text-white">{Math.round(((total - legacyCount) / total) * 100)}% Transition Ready</span>
+      <div className="p-4 rounded-xl bg-[#040814] border border-[#1E2D4A] space-y-2.5 z-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs font-mono">
+          <span className="text-slate-300 font-bold">Aggregate Cryptographic Migration Distribution</span>
+          <span className="text-cyan-400 font-bold">
+            {Math.round(((total - legacyCount) / total) * 100)}% Transition Completed or In-Flight
+          </span>
         </div>
         
         {/* Multi-Segment Bar */}
-        <div className="w-full h-3 rounded-full bg-[#070D1E] border border-[#1E2D4A] flex overflow-hidden">
+        <div className="w-full h-3.5 rounded-full bg-[#070D1E] border border-[#1E2D4A] flex overflow-hidden">
           <div 
             style={{ width: `${(legacyCount / total) * 100}%` }} 
             className="h-full bg-rose-500 transition-all duration-700 hover:opacity-80" 
@@ -132,35 +140,70 @@ export default function MigrationReadinessVisual({ cbomReport, onNavigate }) {
             title={`Validated: ${validatedCount} assets`}
           />
         </div>
+
+        {/* Legend Ribbon */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[10px] font-mono text-slate-400">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-rose-500" />
+            <span>Legacy: {legacyCount} ({Math.round((legacyCount/total)*100)}%)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-purple-500" />
+            <span>Hybrid: {hybridCount} ({Math.round((hybridCount/total)*100)}%)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-cyan-400" />
+            <span>PQC Ready: {pqcReadyCount} ({Math.round((pqcReadyCount/total)*100)}%)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span>Validated: {validatedCount} ({Math.round((validatedCount/total)*100)}%)</span>
+          </div>
+        </div>
       </div>
 
-      {/* 4 Phased Progress Stage Cards */}
-      <div className="grid grid-cols-2 gap-2.5 font-mono text-xs z-10">
+      {/* 4 Phased Progress Stage Cards with Zero Horizontal Collisions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 z-10 font-mono">
         {stages.map((stg, idx) => (
           <div
             key={idx}
-            className="p-3.5 rounded-xl bg-[#070D1E] border border-[#1E2D4A] hover:border-cyan-500/40 transition flex flex-col justify-between space-y-2 group"
+            className="p-4 rounded-xl bg-[#070D1E] border border-[#1E2D4A] hover:border-cyan-500/40 transition flex flex-col justify-between space-y-3 group"
           >
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-slate-400 font-bold uppercase">{stg.name}</span>
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${stg.badgeBg} ${stg.badgeBorder} ${stg.badgeText}`}>
+            {/* Top Row: Phase Tag & Percentage */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-slate-400 uppercase font-bold tracking-wider">{stg.phaseTag}</span>
+                <span className="text-slate-300 font-bold">{stg.pct}% of Portfolio</span>
+              </div>
+
+              {/* Asset Count & Stage Name */}
+              <div className="flex items-baseline gap-2 pt-0.5">
+                <span className="text-2xl font-black text-white font-mono" style={{ color: stg.color }}>
+                  {stg.count}
+                </span>
+                <span className="text-xs text-slate-300 font-bold uppercase tracking-wide">
+                  {stg.name}
+                </span>
+              </div>
+
+              {/* Status Badge (Dedicated Row to prevent overlap) */}
+              <div className="pt-1">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border inline-block ${stg.badgeBg} ${stg.badgeBorder} ${stg.badgeText}`}>
                   {stg.label}
                 </span>
               </div>
-              <div className="flex items-baseline gap-1.5 mt-1">
-                <span className="text-xl font-black text-white font-mono">{stg.count}</span>
-                <span className="text-[10px] text-slate-400">assets ({stg.pct}%)</span>
-              </div>
-              <p className="text-[10px] text-slate-400 font-sans leading-snug line-clamp-2 pt-0.5">
+
+              {/* Description */}
+              <p className="text-[11px] text-slate-300 font-sans leading-relaxed pt-1">
                 {stg.desc}
               </p>
             </div>
 
-            <div className="w-full h-1.5 bg-[#050A14] rounded-full overflow-hidden mt-1">
+            {/* Individual Progress Track */}
+            <div className="w-full h-1.5 bg-[#050A14] rounded-full overflow-hidden mt-2">
               <div
                 className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${Math.max(stg.pct, 4)}%`, backgroundColor: stg.color }}
+                style={{ width: `${Math.max(stg.pct, 5)}%`, backgroundColor: stg.color }}
               />
             </div>
           </div>
@@ -168,14 +211,17 @@ export default function MigrationReadinessVisual({ cbomReport, onNavigate }) {
       </div>
 
       {/* Footer */}
-      <div className="pt-2 border-t border-[#1E2D4A] flex items-center justify-between text-xs font-mono z-10">
-        <span className="text-slate-400">Total Portfolio: <strong className="text-white">{total} Assets</strong></span>
+      <div className="pt-2 border-t border-[#1E2D4A] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono z-10">
+        <span className="text-slate-400">
+          Total Cryptographic Inventory: <strong className="text-white">{total} Discovered Assets</strong>
+        </span>
+
         {onNavigate && (
           <button
             onClick={() => onNavigate('roadmap')}
-            className="text-cyan-400 hover:text-cyan-300 hover:underline font-bold flex items-center gap-1.5 transition"
+            className="text-cyan-400 hover:text-cyan-300 hover:underline font-bold flex items-center gap-1.5 transition self-end sm:self-auto"
           >
-            <span>Open PQC Migration Roadmap</span>
+            <span>Open Interactive PQC Migration Roadmap &amp; Playbook</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         )}

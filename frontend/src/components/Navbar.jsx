@@ -3,7 +3,7 @@ import { Database, Lock, RefreshCw, Bell, Shield, Search, Terminal, Activity, Cp
 
 export default function Navbar({ activeScan, onNewScanClick, onOpenMonitoring }) {
   const unreadAlerts = activeScan?.monitoring_summary?.unread_alerts_count || 0;
-  const targetName = activeScan?.scan_summary?.target_name || 'Banking Switch API';
+  const targetName = activeScan?.scan_summary?.target_name || 'No Target Ingested';
 
   return (
     <header className="h-16 border-b border-command-border/80 bg-command-bg/95 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none shadow-2xl">
