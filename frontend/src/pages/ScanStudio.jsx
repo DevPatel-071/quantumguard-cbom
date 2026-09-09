@@ -5,7 +5,6 @@ import {
   Code, 
   Building2, 
   Layers, 
-  ShieldCheck, 
   Sliders, 
   AlertCircle, 
   CheckCircle2, 
@@ -15,11 +14,9 @@ import {
   FolderArchive,
   FolderOpen,
   GitBranch,
-  Globe,
   HardDrive,
   ArrowRight,
-  FileCode2,
-  FileSpreadsheet
+  FileCode2
 } from 'lucide-react';
 import { 
   fetchSamples, 
@@ -167,7 +164,7 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
       if (scanMode === 'folder') {
         setTelemetryLogs(prev => [
           ...prev, 
-          `Packaging folder '${folderName}' (${folderFiles.length} files) with preserved directory trees...`,
+          `Packaging folder '${folderName}' (${folderFiles.length} files)...`,
           "Streaming files to backend scanner..."
         ]);
 
@@ -196,7 +193,7 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
         setTelemetryLogs(prev => [
           ...prev,
           `Uploading archive '${zipFile.name}' (${(zipFile.size / 1024).toFixed(1)} KB)...`,
-          "Extracting archive in isolated sandbox with path-traversal validation..."
+          "Extracting archive in isolated sandbox..."
         ]);
 
         const formData = new FormData();
@@ -324,91 +321,91 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
   };
 
   return (
-    <div className="p-6 sm:p-8 space-y-8 max-w-5xl mx-auto">
+    <div className="p-6 sm:p-8 space-y-7 max-w-5xl mx-auto">
       
       {/* Title */}
       <div className="space-y-1">
-        <h1 className="text-2xl font-extrabold text-slate-100 tracking-tight flex items-center gap-3">
-          <Scan className="w-6 h-6 text-sky-400" />
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+          <Scan className="w-6 h-6 text-blue-600" />
           <span>Cryptographic Discovery & Ingestion Studio</span>
         </h1>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-slate-500">
           Upload whole folders, ZIP/TAR archives, clone remote Git repositories, or scan local directories to generate an explainable Cryptography Bill of Materials (CBOM).
         </p>
       </div>
 
       {/* Ingestion Mode Selector Tabs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs font-semibold">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 p-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold">
         
         <button
           onClick={() => setScanMode('folder')}
-          className={`py-2.5 px-2 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1.5 transition ${
+          className={`py-2.5 px-2 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 transition ${
             scanMode === 'folder'
-              ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm shadow-sky-500/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+              ? 'bg-white text-blue-700 font-bold border border-slate-200 shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
           }`}
         >
-          <FolderOpen className="w-4 h-4 text-sky-400" />
+          <FolderOpen className="w-4 h-4 text-blue-600" />
           <span>Folder Upload</span>
         </button>
 
         <button
           onClick={() => setScanMode('zip')}
-          className={`py-2.5 px-2 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1.5 transition ${
+          className={`py-2.5 px-2 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 transition ${
             scanMode === 'zip'
-              ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm shadow-sky-500/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+              ? 'bg-white text-blue-700 font-bold border border-slate-200 shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
           }`}
         >
-          <FolderArchive className="w-4 h-4 text-indigo-400" />
+          <FolderArchive className="w-4 h-4 text-indigo-600" />
           <span>ZIP / Archive</span>
         </button>
 
         <button
           onClick={() => setScanMode('git')}
-          className={`py-2.5 px-2 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1.5 transition ${
+          className={`py-2.5 px-2 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 transition ${
             scanMode === 'git'
-              ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm shadow-sky-500/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+              ? 'bg-white text-blue-700 font-bold border border-slate-200 shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
           }`}
         >
-          <GitBranch className="w-4 h-4 text-purple-400" />
+          <GitBranch className="w-4 h-4 text-purple-600" />
           <span>Git Repository</span>
         </button>
 
         <button
           onClick={() => setScanMode('local')}
-          className={`py-2.5 px-2 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1.5 transition ${
+          className={`py-2.5 px-2 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 transition ${
             scanMode === 'local'
-              ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm shadow-sky-500/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+              ? 'bg-white text-blue-700 font-bold border border-slate-200 shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
           }`}
         >
-          <HardDrive className="w-4 h-4 text-emerald-400" />
+          <HardDrive className="w-4 h-4 text-emerald-600" />
           <span>Local Path</span>
         </button>
 
         <button
           onClick={() => setScanMode('sample')}
-          className={`py-2.5 px-2 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1.5 transition ${
+          className={`py-2.5 px-2 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 transition ${
             scanMode === 'sample'
-              ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm shadow-sky-500/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+              ? 'bg-white text-blue-700 font-bold border border-slate-200 shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
           }`}
         >
-          <Building2 className="w-4 h-4 text-amber-400" />
+          <Building2 className="w-4 h-4 text-amber-600" />
           <span>Demo Suites</span>
         </button>
 
         <button
           onClick={() => setScanMode('raw')}
-          className={`py-2.5 px-2 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1.5 transition ${
+          className={`py-2.5 px-2 rounded-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 transition ${
             scanMode === 'raw'
-              ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm shadow-sky-500/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+              ? 'bg-white text-blue-700 font-bold border border-slate-200 shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
           }`}
         >
-          <Code className="w-4 h-4 text-pink-400" />
+          <Code className="w-4 h-4 text-pink-600" />
           <span>Code Snippet</span>
         </button>
 
@@ -416,15 +413,15 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
 
       {/* 1. FOLDER UPLOAD VIEW */}
       {scanMode === 'folder' && (
-        <div className="p-8 rounded-3xl bg-slate-900/60 border-2 border-dashed border-slate-700 hover:border-sky-500/60 text-center space-y-4 transition">
-          <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center mx-auto text-sky-400">
-            <FolderOpen className="w-8 h-8" />
+        <div className="p-8 rounded-xl bg-white border-2 border-dashed border-slate-200 hover:border-blue-400 text-center space-y-4 shadow-xs transition">
+          <div className="w-14 h-14 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto text-blue-600">
+            <FolderOpen className="w-7 h-7" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-base font-bold text-slate-100">
+            <h3 className="text-base font-bold text-slate-900">
               Upload Entire Project Folder
             </h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+            <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
               Select an entire directory from your local machine. Subdirectories, source code files, certificates, and manifests will be ingested with preserved paths.
             </p>
           </div>
@@ -440,19 +437,19 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
           />
           <label
             htmlFor="folder-input"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-sky-500 hover:bg-sky-400 text-white shadow-lg shadow-sky-500/20 cursor-pointer transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm cursor-pointer transition"
           >
             <FolderOpen className="w-4 h-4" />
             <span>Select Folder to Ingest</span>
           </label>
 
           {folderFiles.length > 0 && (
-            <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-left font-mono space-y-1 text-slate-300 max-w-lg mx-auto">
-              <div className="flex justify-between text-sky-400 font-bold">
+            <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-left font-mono space-y-1 text-slate-700 max-w-lg mx-auto">
+              <div className="flex justify-between text-blue-700 font-bold">
                 <span>📁 Folder: {folderName}</span>
                 <span>{folderFiles.length} files detected</span>
               </div>
-              <div className="text-[11px] text-slate-400 truncate">
+              <div className="text-[11px] text-slate-500 truncate">
                 Root: {folderFiles[0]?.webkitRelativePath || folderFiles[0]?.name}
               </div>
             </div>
@@ -462,16 +459,16 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
 
       {/* 2. ZIP / ARCHIVE UPLOAD VIEW */}
       {scanMode === 'zip' && (
-        <div className="p-8 rounded-3xl bg-slate-900/60 border-2 border-dashed border-slate-700 hover:border-indigo-500/60 text-center space-y-4 transition">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center mx-auto text-indigo-400">
-            <FolderArchive className="w-8 h-8" />
+        <div className="p-8 rounded-xl bg-white border-2 border-dashed border-slate-200 hover:border-blue-400 text-center space-y-4 shadow-xs transition">
+          <div className="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto text-indigo-600">
+            <FolderArchive className="w-7 h-7" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-base font-bold text-slate-100">
+            <h3 className="text-base font-bold text-slate-900">
               Upload ZIP or Compressed Archive
             </h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-              Supports <span className="text-indigo-300 font-mono">.zip</span>, <span className="text-indigo-300 font-mono">.tar.gz</span>, <span className="text-indigo-300 font-mono">.tgz</span>, and <span className="text-indigo-300 font-mono">.tar</span> repositories with safe multi-tier sandbox extraction.
+            <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+              Supports <span className="font-mono text-indigo-600">.zip</span>, <span className="font-mono text-indigo-600">.tar.gz</span>, <span className="font-mono text-indigo-600">.tgz</span>, and <span className="font-mono text-indigo-600">.tar</span> repositories.
             </p>
           </div>
 
@@ -489,14 +486,14 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
           />
           <label
             htmlFor="zip-input"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 cursor-pointer transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm cursor-pointer transition"
           >
             <Upload className="w-4 h-4" />
             <span>Select Archive File</span>
           </label>
 
           {zipFile && (
-            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-mono text-emerald-400 max-w-sm mx-auto">
+            <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs font-mono text-emerald-800 max-w-sm mx-auto">
               ✓ Selected Archive: <strong>{zipFile.name}</strong> ({(zipFile.size / 1024).toFixed(1)} KB)
             </div>
           )}
@@ -505,15 +502,15 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
 
       {/* 3. GIT REPOSITORY CLONE VIEW */}
       {scanMode === 'git' && (
-        <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4">
-          <div className="flex items-center gap-2 text-sm font-bold text-slate-200">
-            <GitBranch className="w-4 h-4 text-purple-400" />
+        <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
+            <GitBranch className="w-4 h-4 text-purple-600" />
             <span>Remote Git Repository Scanner</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div className="sm:col-span-2 space-y-1">
-              <label className="text-slate-400 font-mono">Git Clone URL (HTTPS / SSH)</label>
+              <label className="text-slate-600 font-medium">Git Clone URL (HTTPS / SSH)</label>
               <input
                 type="text"
                 value={gitUrl}
@@ -523,33 +520,33 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
                   setContextConfig(prev => ({ ...prev, application: name }));
                 }}
                 placeholder="https://github.com/owner/repository.git"
-                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:border-purple-500 focus:outline-none font-mono text-xs"
+                className="w-full p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-purple-500 focus:outline-none font-mono text-xs"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-slate-400 font-mono">Branch / Tag (Optional)</label>
+              <label className="text-slate-600 font-medium">Branch / Tag (Optional)</label>
               <input
                 type="text"
                 value={gitBranch}
                 onChange={(e) => setGitBranch(e.target.value)}
                 placeholder="main / master"
-                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:border-purple-500 focus:outline-none font-mono text-xs"
+                className="w-full p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-purple-500 focus:outline-none font-mono text-xs"
               />
             </div>
           </div>
 
           {/* Quick Suggestions */}
-          <div className="pt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+          <div className="pt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
             <span>Popular Open Source Suggestions:</span>
             <button
               onClick={() => { setGitUrl('https://github.com/open-quantum-safe/liboqs.git'); setGitBranch('main'); setContextConfig(prev => ({ ...prev, application: 'liboqs Post-Quantum C' })); }}
-              className="px-2.5 py-1 rounded bg-slate-950 hover:bg-slate-800 text-purple-400 border border-slate-800 transition"
+              className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-purple-700 border border-slate-200 transition"
             >
               liboqs (PQC Library)
             </button>
             <button
               onClick={() => { setGitUrl('https://github.com/pyca/cryptography.git'); setGitBranch('main'); setContextConfig(prev => ({ ...prev, application: 'pyca/cryptography' })); }}
-              className="px-2.5 py-1 rounded bg-slate-950 hover:bg-slate-800 text-sky-400 border border-slate-800 transition"
+              className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-blue-700 border border-slate-200 transition"
             >
               pyca/cryptography
             </button>
@@ -559,14 +556,14 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
 
       {/* 4. LOCAL DIRECTORY PATH VIEW */}
       {scanMode === 'local' && (
-        <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4">
-          <div className="flex items-center gap-2 text-sm font-bold text-slate-200">
-            <HardDrive className="w-4 h-4 text-emerald-400" />
+        <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-xs space-y-4">
+          <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
+            <HardDrive className="w-4 h-4 text-emerald-600" />
             <span>Local Filesystem Directory Path</span>
           </div>
 
           <div className="space-y-1 text-xs">
-            <label className="text-slate-400 font-mono">Absolute Directory Path on Host</label>
+            <label className="text-slate-600 font-medium">Absolute Directory Path on Host</label>
             <input
               type="text"
               value={localPath}
@@ -576,7 +573,7 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
                 setContextConfig(prev => ({ ...prev, application: baseName }));
               }}
               placeholder="e.g. C:\Users\name\projects\my-app or /var/www/my-app"
-              className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 focus:border-emerald-500 focus:outline-none font-mono text-xs"
+              className="w-full p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-emerald-500 focus:outline-none font-mono text-xs"
             />
           </div>
         </div>
@@ -585,7 +582,7 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
       {/* 5. PRE-LOADED DEMO REPOSITORIES */}
       {scanMode === 'sample' && (
         <div className="space-y-3">
-          <label className="text-xs font-bold text-slate-300 uppercase tracking-wider font-mono">
+          <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
             Select Pre-Loaded Test Suite:
           </label>
 
@@ -596,21 +593,21 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
                 <div
                   key={sample.id}
                   onClick={() => handleSampleChange(sample.id)}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all duration-200 space-y-2 ${
+                  className={`p-4 rounded-xl border cursor-pointer transition-all duration-150 space-y-2 ${
                     isSelected
-                      ? 'bg-gradient-to-br from-sky-950/40 via-slate-900 to-slate-900 border-sky-500/50 shadow-lg shadow-sky-500/10'
-                      : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                      ? 'bg-blue-50/80 border-blue-500 shadow-xs'
+                      : 'bg-white border-slate-200 hover:border-slate-300'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-slate-100">{sample.name}</span>
+                    <span className="font-bold text-sm text-slate-900">{sample.name}</span>
                     <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                      isSelected ? 'border-sky-400 bg-sky-400' : 'border-slate-600'
+                      isSelected ? 'border-blue-600 bg-blue-600' : 'border-slate-300'
                     }`}>
-                      {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-slate-950" />}
+                      {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">{sample.description}</p>
+                  <p className="text-xs text-slate-500 leading-relaxed">{sample.description}</p>
                 </div>
               );
             })}
@@ -621,42 +618,42 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
       {/* 6. RAW CODE SNIPPET */}
       {scanMode === 'raw' && (
         <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-300 uppercase tracking-wider font-mono">
+          <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
             Paste Source Code Snippet:
           </label>
           <textarea
             rows={7}
             value={rawCodeSnippet}
             onChange={(e) => setRawCodeSnippet(e.target.value)}
-            className="w-full p-4 rounded-2xl bg-slate-950 border border-slate-800 text-emerald-400 font-mono text-xs focus:border-sky-500 focus:outline-none leading-relaxed"
+            className="w-full p-4 rounded-xl bg-slate-900 border border-slate-800 text-emerald-400 font-mono text-xs focus:border-blue-500 focus:outline-none leading-relaxed"
           />
         </div>
       )}
 
       {/* Operational Context & Threat Model Customization */}
-      <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-5">
-        <div className="flex items-center gap-2 text-sm font-bold text-slate-200">
-          <Sliders className="w-4 h-4 text-sky-400" />
+      <div className="p-6 rounded-xl bg-white border border-slate-200 shadow-xs space-y-5">
+        <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
+          <Sliders className="w-4 h-4 text-blue-600" />
           <span>Operational Context & Threat Model Parameters</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
           <div className="space-y-1">
-            <label className="text-slate-400 font-mono">Application Name</label>
+            <label className="text-slate-600 font-medium">Application Name</label>
             <input
               type="text"
               value={contextConfig.application}
               onChange={(e) => setContextConfig({ ...contextConfig, application: e.target.value })}
-              className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:border-sky-500 focus:outline-none"
+              className="w-full p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:border-blue-500 focus:outline-none"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-slate-400 font-mono">Business Criticality</label>
+            <label className="text-slate-600 font-medium">Business Criticality</label>
             <select
               value={contextConfig.business_criticality}
               onChange={(e) => setContextConfig({ ...contextConfig, business_criticality: e.target.value })}
-              className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:border-sky-500 focus:outline-none"
+              className="w-full p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:border-blue-500 focus:outline-none"
             >
               <option value="CRITICAL">CRITICAL (Core Banking / Identity)</option>
               <option value="HIGH">HIGH (Customer Production API)</option>
@@ -666,11 +663,11 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
           </div>
 
           <div className="space-y-1">
-            <label className="text-slate-400 font-mono">Network Exposure</label>
+            <label className="text-slate-600 font-medium">Network Exposure</label>
             <select
               value={contextConfig.exposure}
               onChange={(e) => setContextConfig({ ...contextConfig, exposure: e.target.value })}
-              className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:border-sky-500 focus:outline-none"
+              className="w-full p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:border-blue-500 focus:outline-none"
             >
               <option value="INTERNET_FACING">INTERNET_FACING (HNDL Risk)</option>
               <option value="INTERNAL_NETWORK">INTERNAL_NETWORK</option>
@@ -679,11 +676,11 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
           </div>
 
           <div className="space-y-1">
-            <label className="text-slate-400 font-mono">Data Sensitivity</label>
+            <label className="text-slate-600 font-medium">Data Sensitivity</label>
             <select
               value={contextConfig.data_sensitivity}
               onChange={(e) => setContextConfig({ ...contextConfig, data_sensitivity: e.target.value })}
-              className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:border-sky-500 focus:outline-none"
+              className="w-full p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:border-blue-500 focus:outline-none"
             >
               <option value="HIGHLY_REGULATED">HIGHLY_REGULATED</option>
               <option value="CONFIDENTIAL">CONFIDENTIAL</option>
@@ -694,11 +691,11 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
         </div>
 
         {/* Mosca Sliders Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-800 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-100 text-xs">
           <div className="space-y-1.5">
-            <div className="flex justify-between font-mono">
-              <span className="text-slate-400">Data Lifetime (X)</span>
-              <span className="font-bold text-sky-400">{contextConfig.data_lifetime_years} yrs</span>
+            <div className="flex justify-between font-medium">
+              <span className="text-slate-600">Data Lifetime (X)</span>
+              <span className="font-bold text-blue-700 font-mono">{contextConfig.data_lifetime_years} yrs</span>
             </div>
             <input
               type="range"
@@ -707,14 +704,14 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
               step="1"
               value={contextConfig.data_lifetime_years}
               onChange={(e) => setContextConfig({ ...contextConfig, data_lifetime_years: parseFloat(e.target.value) })}
-              className="w-full accent-sky-400"
+              className="w-full accent-blue-600"
             />
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex justify-between font-mono">
-              <span className="text-slate-400">Migration Time (Y)</span>
-              <span className="font-bold text-indigo-400">{contextConfig.migration_time_years} yrs</span>
+            <div className="flex justify-between font-medium">
+              <span className="text-slate-600">Migration Time (Y)</span>
+              <span className="font-bold text-indigo-700 font-mono">{contextConfig.migration_time_years} yrs</span>
             </div>
             <input
               type="range"
@@ -723,14 +720,14 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
               step="0.5"
               value={contextConfig.migration_time_years}
               onChange={(e) => setContextConfig({ ...contextConfig, migration_time_years: parseFloat(e.target.value) })}
-              className="w-full accent-indigo-400"
+              className="w-full accent-indigo-600"
             />
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex justify-between font-mono">
-              <span className="text-slate-400">Quantum Threat Horizon (Z)</span>
-              <span className="font-bold text-purple-400">{contextConfig.quantum_timeline_years} yrs</span>
+            <div className="flex justify-between font-medium">
+              <span className="text-slate-600">Quantum Threat Horizon (Z)</span>
+              <span className="font-bold text-purple-700 font-mono">{contextConfig.quantum_timeline_years} yrs</span>
             </div>
             <input
               type="range"
@@ -739,7 +736,7 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
               step="1"
               value={contextConfig.quantum_timeline_years}
               onChange={(e) => setContextConfig({ ...contextConfig, quantum_timeline_years: parseFloat(e.target.value) })}
-              className="w-full accent-purple-400"
+              className="w-full accent-purple-600"
             />
           </div>
         </div>
@@ -747,27 +744,9 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
 
       {/* Error Banner */}
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-400" />
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-600" />
           <span>{error}</span>
-        </div>
-      )}
-
-      {/* Live Telemetry Console */}
-      {telemetryLogs.length > 0 && (
-        <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 font-mono text-xs">
-          <div className="flex items-center gap-2 text-slate-400 text-[11px]">
-            <Terminal className="w-3.5 h-3.5 text-sky-400" />
-            <span>SCAN TELEMETRY LOG</span>
-          </div>
-          <div className="space-y-1 text-slate-300 max-h-36 overflow-y-auto">
-            {telemetryLogs.map((log, lIdx) => (
-              <div key={lIdx} className="flex items-start gap-2 text-slate-300">
-                <span className="text-sky-500">&gt;</span>
-                <span>{log}</span>
-              </div>
-            ))}
-          </div>
         </div>
       )}
 
@@ -776,7 +755,7 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
         <button
           onClick={handleInitiateScan}
           disabled={loading}
-          className="px-8 py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white shadow-xl shadow-cyan-500/20 disabled:opacity-50 flex items-center gap-3 transition"
+          className="px-8 py-3.5 rounded-xl font-semibold text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow transition disabled:opacity-50 flex items-center gap-2.5"
         >
           {loading ? (
             <>
@@ -785,7 +764,7 @@ void SignFinancialTransaction(RSA* rsa_key, const unsigned char* payload, size_t
             </>
           ) : (
             <>
-              <span>Execute Ingestion & Discovery Scan</span>
+              <span>Execute Discovery Scan</span>
               <ArrowRight className="w-4 h-4" />
             </>
           )}

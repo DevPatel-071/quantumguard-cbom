@@ -58,7 +58,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070B14] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col font-sans selection:bg-blue-500/20 selection:text-blue-900">
       
       {/* 1. Opening Splash Screen */}
       {showSplash && (
@@ -86,11 +86,13 @@ export default function App() {
         />
 
         {/* Center Content View */}
-        <main className="flex-1 overflow-y-auto bg-[#070B14]/60">
+        <main className="flex-1 overflow-y-auto bg-[#F8FAFC]">
           {initialLoading ? (
             <div className="h-full flex flex-col items-center justify-center p-12 space-y-4">
-              <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
-              <p className="text-xs text-slate-400 font-mono">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm">
+                <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+              </div>
+              <p className="text-sm font-medium text-slate-600">
                 Initializing QUANTECT Command Center & Discovering Cryptographic Baseline...
               </p>
             </div>

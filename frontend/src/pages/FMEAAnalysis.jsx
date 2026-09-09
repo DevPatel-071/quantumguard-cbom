@@ -1,17 +1,11 @@
 import React, { useState } from 'react';
 import { 
   ShieldAlert, 
-  ShieldCheck, 
-  AlertTriangle, 
-  Layers, 
-  Activity, 
   Search, 
-  Filter, 
-  CheckCircle2, 
-  Info,
-  ChevronRight,
   Sparkles,
-  HelpCircle
+  Info,
+  CheckCircle2,
+  ChevronRight
 } from 'lucide-react';
 
 export default function FMEAAnalysis({ cbomReport, onSelectAsset }) {
@@ -21,7 +15,7 @@ export default function FMEAAnalysis({ cbomReport, onSelectAsset }) {
 
   if (!cbomReport) {
     return (
-      <div className="p-8 text-center text-slate-400">
+      <div className="p-8 text-center text-slate-500">
         No active inventory available. Please execute a cryptographic discovery scan.
       </div>
     );
@@ -43,35 +37,35 @@ export default function FMEAAnalysis({ cbomReport, onSelectAsset }) {
 
   const getPriorityBadge = (priority) => {
     switch (priority) {
-      case 'CRITICAL': return 'bg-rose-500/20 text-rose-300 border-rose-500/30';
-      case 'HIGH': return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-      case 'MEDIUM': return 'bg-sky-500/20 text-sky-300 border-sky-500/30';
-      default: return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+      case 'CRITICAL': return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'HIGH': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'MEDIUM': return 'bg-blue-50 text-blue-700 border-blue-200';
+      default: return 'bg-emerald-50 text-emerald-700 border-emerald-200';
     }
   };
 
   return (
-    <div className="p-6 sm:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-6 sm:p-8 space-y-7 max-w-7xl mx-auto">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div className="space-y-1">
-          <h1 className="text-2xl font-extrabold text-slate-100 tracking-tight flex items-center gap-3">
-            <ShieldAlert className="w-6 h-6 text-rose-400" />
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <ShieldAlert className="w-6 h-6 text-rose-600" />
             <span>Quantum Failure Mode & Effects Analysis (FMEA)</span>
           </h1>
-          <p className="text-xs text-slate-400">
-            Systematic engineering risk prioritization: <span className="font-mono text-cyan-300">Severity (S) &times; Occurrence (O) &times; Detection (D) = Risk Priority Number (RPN)</span>.
+          <p className="text-xs text-slate-500">
+            Evaluates potential failure risks during PQC/hybrid migration: <span className="font-semibold text-blue-700">Severity (S) &times; Occurrence (O) &times; Detection (D) = Risk Priority Number (RPN)</span>.
           </p>
         </div>
 
         {fmeaSummary && (
-          <div className="flex items-center gap-2 font-mono text-xs">
-            <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
-              Avg RPN: <strong className="text-amber-400">{fmeaSummary.average_rpn}</strong>
+          <div className="flex items-center gap-2 text-xs">
+            <div className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 shadow-xs">
+              Avg RPN: <strong className="text-amber-700 font-mono">{fmeaSummary.average_rpn}</strong>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
-              Max RPN: <strong className="text-rose-400">{fmeaSummary.max_rpn} / 1000</strong>
+            <div className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 shadow-xs">
+              Max RPN: <strong className="text-rose-600 font-mono">{fmeaSummary.max_rpn} / 1000</strong>
             </div>
           </div>
         )}
@@ -79,50 +73,50 @@ export default function FMEAAnalysis({ cbomReport, onSelectAsset }) {
 
       {/* KPI Overview Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1">
-          <span className="text-[10px] font-mono uppercase text-slate-400">Total Assessed Assets</span>
-          <div className="text-2xl font-black text-slate-100 font-mono">
+        <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-xs space-y-1">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Assessed Assets</span>
+          <div className="text-2xl font-bold text-slate-900 font-mono">
             {fmeaSummary?.total_assessed || 0}
           </div>
           <span className="text-[11px] text-slate-500">100% portfolio coverage</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-slate-900/80 border border-rose-500/30 bg-rose-500/5 space-y-1">
-          <span className="text-[10px] font-mono uppercase text-rose-400">Critical RPN (&ge; 250)</span>
-          <div className="text-2xl font-black text-rose-400 font-mono">
+        <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-xs space-y-1">
+          <span className="text-xs font-semibold text-rose-600 uppercase tracking-wider">Critical RPN (&ge; 250)</span>
+          <div className="text-2xl font-bold text-rose-600 font-mono">
             {fmeaSummary?.critical_rpn_count || 0}
           </div>
-          <span className="text-[11px] text-slate-400">Immediate remediation priority</span>
+          <span className="text-[11px] text-slate-500">Immediate remediation priority</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-slate-900/80 border border-amber-500/30 bg-amber-500/5 space-y-1">
-          <span className="text-[10px] font-mono uppercase text-amber-400">High RPN (150 – 249)</span>
-          <div className="text-2xl font-black text-amber-300 font-mono">
+        <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-xs space-y-1">
+          <span className="text-xs font-semibold text-amber-600 uppercase tracking-wider">High RPN (150 – 249)</span>
+          <div className="text-2xl font-bold text-amber-600 font-mono">
             {fmeaSummary?.high_rpn_count || 0}
           </div>
-          <span className="text-[11px] text-slate-400">Phase 2 transition backlog</span>
+          <span className="text-[11px] text-slate-500">Phase 2 transition backlog</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-slate-900/80 border border-emerald-500/30 bg-emerald-500/5 space-y-1">
-          <span className="text-[10px] font-mono uppercase text-emerald-400">Controlled RPN (&lt; 150)</span>
-          <div className="text-2xl font-black text-emerald-300 font-mono">
+        <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-xs space-y-1">
+          <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Controlled RPN (&lt; 150)</span>
+          <div className="text-2xl font-bold text-emerald-700 font-mono">
             {(fmeaSummary?.medium_rpn_count || 0) + (fmeaSummary?.low_rpn_count || 0)}
           </div>
-          <span className="text-[11px] text-slate-400">Manageable / PQC baseline</span>
+          <span className="text-[11px] text-slate-500">Manageable / PQC baseline</span>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-2xl bg-slate-900/80 border border-slate-800">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs">
         <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
           {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].map((p) => (
             <button
               key={p}
               onClick={() => setSelectedPriority(p)}
-              className={`px-3 py-1.5 rounded-xl transition ${
+              className={`px-3 py-1.5 rounded-lg transition ${
                 selectedPriority === p
-                  ? 'bg-cyan-600 text-white font-bold'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                  ? 'bg-blue-600 text-white font-bold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
               {p} ({p === 'ALL' ? records.length : records.filter(r => r.priority === p).length})
@@ -131,23 +125,23 @@ export default function FMEAAnalysis({ cbomReport, onSelectAsset }) {
         </div>
 
         <div className="relative w-full sm:w-64">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search FMEA failure modes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:border-cyan-500 focus:outline-none"
+            className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:border-blue-500 focus:outline-none"
           />
         </div>
       </div>
 
       {/* FMEA Data Table */}
-      <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4">
+      <div className="p-5 rounded-xl bg-white border border-slate-200 shadow-xs space-y-4">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-slate-800 text-[11px] font-mono text-slate-400 uppercase">
+              <tr className="border-b border-slate-200 text-[11px] font-semibold text-slate-600 uppercase">
                 <th className="pb-3 pr-4">Asset & Algorithm</th>
                 <th className="pb-3 px-3">Failure Mode</th>
                 <th className="pb-3 px-3">Potential Effect</th>
@@ -159,7 +153,7 @@ export default function FMEAAnalysis({ cbomReport, onSelectAsset }) {
                 <th className="pb-3 pl-3">Prevention Control</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-100 font-sans">
               {filteredRecords.length === 0 ? (
                 <tr>
                   <td colSpan="9" className="py-8 text-center text-slate-500">
@@ -171,37 +165,37 @@ export default function FMEAAnalysis({ cbomReport, onSelectAsset }) {
                   <tr 
                     key={rec.asset_id}
                     onClick={() => setSelectedFMEA(rec)}
-                    className="hover:bg-slate-800/40 transition cursor-pointer group"
+                    className="hover:bg-slate-50 transition cursor-pointer group"
                   >
                     <td className="py-3.5 pr-4 font-mono">
-                      <div className="font-bold text-slate-100 group-hover:text-cyan-300 transition">
+                      <div className="font-bold text-slate-900 group-hover:text-blue-700 transition">
                         {rec.asset_id}
                       </div>
-                      <div className="text-[11px] text-slate-400">{rec.algorithm}</div>
+                      <div className="text-[11px] text-slate-500">{rec.algorithm}</div>
                     </td>
 
-                    <td className="py-3.5 px-3 max-w-[200px] truncate text-slate-300">
+                    <td className="py-3.5 px-3 max-w-[200px] truncate text-slate-800">
                       {rec.failure_mode}
                     </td>
 
-                    <td className="py-3.5 px-3 max-w-[220px] truncate text-slate-400">
+                    <td className="py-3.5 px-3 max-w-[220px] truncate text-slate-600">
                       {rec.potential_effect}
                     </td>
 
-                    <td className="py-3.5 px-2 text-center font-mono font-bold text-rose-400">
+                    <td className="py-3.5 px-2 text-center font-mono font-bold text-rose-600">
                       {rec.severity}
                     </td>
 
-                    <td className="py-3.5 px-2 text-center font-mono font-bold text-amber-400">
+                    <td className="py-3.5 px-2 text-center font-mono font-bold text-amber-600">
                       {rec.occurrence}
                     </td>
 
-                    <td className="py-3.5 px-2 text-center font-mono font-bold text-indigo-400">
+                    <td className="py-3.5 px-2 text-center font-mono font-bold text-blue-600">
                       {rec.detection}
                     </td>
 
                     <td className="py-3.5 px-3 text-center font-mono font-black text-sm">
-                      <span className={rec.rpn >= 250 ? 'text-rose-400' : rec.rpn >= 150 ? 'text-amber-400' : 'text-slate-300'}>
+                      <span className={rec.rpn >= 250 ? 'text-rose-600' : rec.rpn >= 150 ? 'text-amber-600' : 'text-slate-700'}>
                         {rec.rpn}
                       </span>
                     </td>
@@ -212,7 +206,7 @@ export default function FMEAAnalysis({ cbomReport, onSelectAsset }) {
                       </span>
                     </td>
 
-                    <td className="py-3.5 pl-3 text-slate-300 text-[11px] max-w-[220px] truncate">
+                    <td className="py-3.5 pl-3 text-slate-700 text-[11px] max-w-[220px] truncate">
                       {rec.prevention_control}
                     </td>
                   </tr>
@@ -225,44 +219,44 @@ export default function FMEAAnalysis({ cbomReport, onSelectAsset }) {
 
       {/* Selected FMEA "Why This RPN?" Modal / Box */}
       {selectedFMEA && (
-        <div className="p-6 rounded-3xl bg-slate-900/95 border border-cyan-500/40 space-y-4 shadow-xl">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="p-6 rounded-xl bg-white border border-blue-200 space-y-4 shadow-lg">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-cyan-400" />
-              <h3 className="font-bold text-sm text-slate-100 font-mono">
+              <Sparkles className="w-4 h-4 text-blue-600" />
+              <h3 className="font-bold text-sm text-slate-900 font-mono">
                 Explainable FMEA RPN Breakdown: #{selectedFMEA.asset_id} ({selectedFMEA.algorithm})
               </h3>
             </div>
             <button 
               onClick={() => setSelectedFMEA(null)}
-              className="text-xs text-slate-400 hover:text-white"
+              className="text-xs text-slate-500 hover:text-slate-900 font-medium"
             >
               Close
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
-            <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-500 block">Severity (S: 1–10)</span>
-              <div className="text-xl font-black text-rose-400">{selectedFMEA.severity} / 10</div>
-              <p className="text-[11px] text-slate-400">Impact on confidentiality & core business assets</p>
+            <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+              <span className="text-[10px] text-slate-500 block font-sans">Severity (S: 1–10)</span>
+              <div className="text-xl font-black text-rose-600">{selectedFMEA.severity} / 10</div>
+              <p className="text-[11px] text-slate-600 font-sans">Impact on confidentiality & core business assets</p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-500 block">Occurrence (O: 1–10)</span>
-              <div className="text-xl font-black text-amber-400">{selectedFMEA.occurrence} / 10</div>
-              <p className="text-[11px] text-slate-400">Observable exposure & data lifetime duration</p>
+            <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+              <span className="text-[10px] text-slate-500 block font-sans">Occurrence (O: 1–10)</span>
+              <div className="text-xl font-black text-amber-600">{selectedFMEA.occurrence} / 10</div>
+              <p className="text-[11px] text-slate-600 font-sans">Observable exposure & data lifetime duration</p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-              <span className="text-[10px] text-slate-500 block">Detection (D: 1–10)</span>
-              <div className="text-xl font-black text-indigo-400">{selectedFMEA.detection} / 10</div>
-              <p className="text-[11px] text-slate-400">Cryptographic transparency & agility difficulty</p>
+            <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+              <span className="text-[10px] text-slate-500 block font-sans">Detection (D: 1–10)</span>
+              <div className="text-xl font-black text-blue-600">{selectedFMEA.detection} / 10</div>
+              <p className="text-[11px] text-slate-600 font-sans">Cryptographic transparency & agility difficulty</p>
             </div>
           </div>
 
-          <p className="text-xs text-slate-200 leading-relaxed bg-slate-950 p-4 rounded-xl border border-slate-800">
-            <strong>Why This RPN:</strong> {selectedFMEA.why_this_rpn}
+          <p className="text-xs text-slate-700 leading-relaxed bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+            <strong className="text-slate-900">Why This RPN:</strong> {selectedFMEA.why_this_rpn}
           </p>
         </div>
       )}
