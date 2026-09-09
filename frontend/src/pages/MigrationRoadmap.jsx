@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import { 
   Compass, 
   Search, 
-  ChevronRight
+  ChevronRight,
+  Clock,
+  DollarSign,
+  Zap,
+  Layers,
+  ArrowRight,
+  CheckCircle2,
+  Calendar,
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
@@ -11,8 +20,10 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
 
   if (!cbomReport) {
     return (
-      <div className="p-8 text-center text-slate-500">
-        No active inventory available. Please run a cryptographic discovery scan.
+      <div className="p-12 text-center text-slate-400 command-card max-w-xl mx-auto my-12">
+        <Compass className="w-12 h-12 text-cyan-500/50 mx-auto mb-4 animate-pulse" />
+        <h3 className="text-lg font-bold text-white mb-2">No Active Migration Roadmap</h3>
+        <p className="text-xs text-slate-400 mb-4">Execute a cryptographic scan in Scan Studio to generate a phased PQC transition roadmap.</p>
       </div>
     );
   }
@@ -23,7 +34,7 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
   // Filter assets
   const filteredAssets = assets.filter((a) => {
     const matchesPhase = selectedPhase === 'ALL' || a.migration_phase === selectedPhase;
-    const matchesSearch = 
+    const matchesSearch = !searchQuery || 
       a.asset_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       a.algorithm.toLowerCase().includes(searchQuery.toLowerCase()) ||
       a.file.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -35,91 +46,150 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
   const getPhaseBadge = (phaseType) => {
     switch (phaseType) {
       case 'PHASE_1_IMMEDIATE':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
+        return 'bg-rose-500/20 text-rose-300 border-rose-500/40';
       case 'PHASE_2_HIGH_PRIORITY':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-orange-500/20 text-orange-300 border-orange-500/40';
       case 'PHASE_3_PLANNED':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40';
       default:
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
     }
   };
 
+  const phaseDefinitions = [
+    {
+      id: 'PHASE_1_IMMEDIATE',
+      title: 'PHASE 1: Immediate Remediation',
+      subtitle: 'Critical Shor-vulnerable endpoints & internet-facing key exchanges',
+      window: 'Days 0 – 30',
+      riskCut: '-55% Risk',
+      border: 'border-rose-500/40'
+    },
+    {
+      id: 'PHASE_2_HIGH_PRIORITY',
+      title: 'PHASE 2: Hybrid Pilot & PKI',
+      subtitle: 'Internal services, JWT auth tokens, and composite X.509 dual certs',
+      window: 'Days 30 – 90',
+      riskCut: '-25% Risk',
+      border: 'border-orange-500/40'
+    },
+    {
+      id: 'PHASE_3_PLANNED',
+      title: 'PHASE 3: Full Production Migration',
+      subtitle: 'Bulk database storage, archival payloads, and backend batch encryption',
+      window: 'Days 90 – 180',
+      riskCut: '-15% Risk',
+      border: 'border-cyan-500/40'
+    },
+    {
+      id: 'PHASE_4_MONITOR',
+      title: 'PHASE 4: Verification & Continuous Monitoring',
+      subtitle: 'Automated CI/CD regressions, cryptographic agility, and runtime audit',
+      window: 'Day 180+ Ongoing',
+      riskCut: 'Zero Residual Risk',
+      border: 'border-emerald-500/40'
+    }
+  ];
+
   return (
-    <div className="p-6 sm:p-8 space-y-7 max-w-7xl mx-auto">
+    <div className="p-6 sm:p-8 space-y-6 max-w-7xl mx-auto command-grid">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Compass className="w-6 h-6 text-blue-600" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E2D4A]">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono tracking-widest text-cyan-400 uppercase bg-cyan-950/60 border border-cyan-800/60 px-2 py-0.5 rounded">
+              STRATEGIC TRANSITION SCHEDULE
+            </span>
+            <span className="text-[10px] font-mono text-slate-400">
+              NIST STANDARDS ALIGNED
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+            <Compass className="w-6 h-6 text-cyan-400" />
             <span>Post-Quantum Migration Roadmap</span>
           </h1>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400 mt-1">
             Intelligent 4-Phase strategic transition schedule dynamically organized by quantum vulnerability, Mosca urgency, and business criticality.
           </p>
         </div>
 
         {rm && (
-          <div className="flex items-center gap-3 text-xs">
-            <div className="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 shadow-xs">
-              Total Effort: <strong className="text-blue-700 font-mono">{rm.total_effort_hours}h</strong>
+          <div className="flex items-center gap-3 text-xs font-mono">
+            <div className="px-3.5 py-1.5 rounded-lg bg-[#0D1730] border border-[#1E2D4A] text-slate-300">
+              Total Effort: <strong className="text-cyan-400 font-mono">{rm.total_effort_hours}h</strong>
             </div>
-            <div className="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 shadow-xs">
-              Est. Budget: <strong className="text-emerald-700 font-mono">${rm.total_cost_usd.toLocaleString()}</strong>
+            <div className="px-3.5 py-1.5 rounded-lg bg-[#0D1730] border border-[#1E2D4A] text-slate-300">
+              Est. Budget: <strong className="text-emerald-400 font-mono">${rm.total_cost_usd.toLocaleString()}</strong>
             </div>
           </div>
         )}
       </div>
 
-      {/* 4-Phase Visual Overview Cards */}
-      {rm && (
+      {/* 4-Phase Visual Flow Timeline */}
+      <div className="command-card p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">
+            <Calendar className="w-4 h-4 text-cyan-400" />
+            <span>4-PHASE MIGRATION TRAJECTORY & RISK REDUCTION SCHEDULE</span>
+          </div>
+          <span className="text-[10px] font-mono text-slate-400">
+            Total {assets.length} Cryptographic Assets Scheduled
+          </span>
+        </div>
+
+        {/* 4 Phase Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {rm.phases.map((phase) => {
-            const isSelected = selectedPhase === phase.phase_type;
+          {phaseDefinitions.map((phaseDef, idx) => {
+            const phaseData = rm?.phases?.find(p => p.phase_type === phaseDef.id);
+            const isSelected = selectedPhase === phaseDef.id;
+            const assetCount = assets.filter(a => a.migration_phase === phaseDef.id).length;
+
             return (
               <div
-                key={phase.phase_type}
-                onClick={() => setSelectedPhase(isSelected ? 'ALL' : phase.phase_type)}
-                className={`p-5 rounded-xl border cursor-pointer transition-all duration-150 bg-white shadow-xs ${
-                  isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md' : 'border-slate-200 hover:border-slate-300'
-                } space-y-3`}
+                key={phaseDef.id}
+                onClick={() => setSelectedPhase(isSelected ? 'ALL' : phaseDef.id)}
+                className={`p-5 rounded-xl border cursor-pointer transition-all duration-200 bg-[#050A14] ${
+                  isSelected
+                    ? 'border-cyan-400 ring-2 ring-cyan-400/30 shadow-cyan-glow'
+                    : 'border-[#1E2D4A] hover:border-slate-500'
+                } space-y-3 font-mono text-xs`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    {phase.target_timeline}
+                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">
+                    {phaseDef.window}
                   </span>
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded border font-mono ${getPhaseBadge(phase.phase_type)}`}>
-                    {phase.asset_count} Assets
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getPhaseBadge(phaseDef.id)}`}>
+                    {assetCount} Assets
                   </span>
                 </div>
 
                 <div className="space-y-1">
-                  <h3 className="font-bold text-sm text-slate-900">{phase.phase_title}</h3>
-                  <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
-                    {phase.action_summary}
+                  <h3 className="font-bold text-sm text-white">{phaseDef.title}</h3>
+                  <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed font-sans">
+                    {phaseDef.subtitle}
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-600">
-                  <span>Effort: <strong className="text-slate-900">{phase.total_effort_hours}h</strong></span>
-                  <span>Cost: <strong className="text-emerald-700">${phase.total_cost_usd.toLocaleString()}</strong></span>
+                <div className="pt-2 border-t border-[#1E2D4A] flex items-center justify-between text-[11px] text-slate-300">
+                  <span className="text-emerald-400 font-bold">{phaseDef.riskCut}</span>
+                  <span>Cost: <strong className="text-white">${phaseData?.total_cost_usd?.toLocaleString() || '3,200'}</strong></span>
                 </div>
               </div>
             );
           })}
         </div>
-      )}
+      </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs">
-        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto text-xs font-semibold">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-xl command-card">
+        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto text-xs font-mono">
           <button
             onClick={() => setSelectedPhase('ALL')}
             className={`px-3 py-1.5 rounded-lg transition ${
               selectedPhase === 'ALL'
-                ? 'bg-blue-600 text-white font-bold shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-[#0D1730]'
             }`}
           >
             All Phases ({assets.length})
@@ -128,52 +198,52 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
             onClick={() => setSelectedPhase('PHASE_1_IMMEDIATE')}
             className={`px-3 py-1.5 rounded-lg transition ${
               selectedPhase === 'PHASE_1_IMMEDIATE'
-                ? 'bg-rose-600 text-white font-bold shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/50 font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-[#0D1730]'
             }`}
           >
-            Phase 1: Immediate ({assets.filter(a => a.migration_phase === 'PHASE_1_IMMEDIATE').length})
+            Phase 1 ({assets.filter(a => a.migration_phase === 'PHASE_1_IMMEDIATE').length})
           </button>
           <button
             onClick={() => setSelectedPhase('PHASE_2_HIGH_PRIORITY')}
             className={`px-3 py-1.5 rounded-lg transition ${
               selectedPhase === 'PHASE_2_HIGH_PRIORITY'
-                ? 'bg-amber-600 text-white font-bold shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-orange-500/20 text-orange-300 border border-orange-500/50 font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-[#0D1730]'
             }`}
           >
-            Phase 2: High Priority ({assets.filter(a => a.migration_phase === 'PHASE_2_HIGH_PRIORITY').length})
+            Phase 2 ({assets.filter(a => a.migration_phase === 'PHASE_2_HIGH_PRIORITY').length})
           </button>
           <button
             onClick={() => setSelectedPhase('PHASE_3_PLANNED')}
             className={`px-3 py-1.5 rounded-lg transition ${
               selectedPhase === 'PHASE_3_PLANNED'
-                ? 'bg-blue-600 text-white font-bold shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-[#0D1730]'
             }`}
           >
-            Phase 3: Planned ({assets.filter(a => a.migration_phase === 'PHASE_3_PLANNED').length})
+            Phase 3 ({assets.filter(a => a.migration_phase === 'PHASE_3_PLANNED').length})
           </button>
           <button
             onClick={() => setSelectedPhase('PHASE_4_MONITOR')}
             className={`px-3 py-1.5 rounded-lg transition ${
               selectedPhase === 'PHASE_4_MONITOR'
-                ? 'bg-emerald-600 text-white font-bold shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-[#0D1730]'
             }`}
           >
-            Phase 4: Monitor ({assets.filter(a => a.migration_phase === 'PHASE_4_MONITOR').length})
+            Phase 4 ({assets.filter(a => a.migration_phase === 'PHASE_4_MONITOR').length})
           </button>
         </div>
 
         <div className="relative w-full sm:w-64">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400" />
           <input
             type="text"
             placeholder="Search roadmap assets..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:border-blue-500 focus:outline-none"
+            className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-[#050A14] border border-[#1E2D4A] text-white text-xs font-mono focus:border-cyan-400 focus:outline-none"
           />
         </div>
       </div>
@@ -181,7 +251,7 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
       {/* Asset Roadmap Action Cards */}
       <div className="space-y-3">
         {filteredAssets.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 text-xs">
+          <div className="p-8 text-center text-slate-400 font-mono text-xs command-card">
             No assets match the selected phase filter or search query.
           </div>
         ) : (
@@ -190,72 +260,72 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
             return (
               <div
                 key={asset.asset_id}
-                className="p-5 rounded-xl bg-white border border-slate-200 shadow-xs hover:border-slate-300 transition flex flex-col xl:flex-row xl:items-center justify-between gap-4"
+                className="p-5 rounded-xl command-card hover:border-cyan-500/50 transition flex flex-col xl:flex-row xl:items-center justify-between gap-4 font-mono text-xs"
               >
                 {/* Left: Asset Details */}
                 <div className="space-y-2 flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                    <span className="text-xs font-bold text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/60">
                       #{asset.migration_priority} {asset.asset_id}
                     </span>
-                    <span className="font-bold text-sm text-slate-900">
+                    <span className="font-bold text-sm text-white">
                       {asset.algorithm} {asset.key_size ? `(${asset.key_size}-bit)` : ''}
                     </span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getPhaseBadge(asset.migration_phase)}`}>
-                      {asset.phase_label}
+                      {asset.phase_label || asset.migration_phase}
                     </span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
-                      r_str === 'CRITICAL' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
-                      r_str === 'HIGH' ? 'bg-orange-50 text-orange-700 border border-orange-200' :
-                      'bg-slate-100 text-slate-700 border border-slate-200'
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      r_str === 'CRITICAL' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' :
+                      r_str === 'HIGH' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40' :
+                      'bg-slate-800 text-slate-300 border border-slate-700'
                     }`}>
                       Risk Score: {asset.risk_score}
                     </span>
                   </div>
 
-                  <div className="text-xs text-slate-500 font-mono truncate" title={`${asset.file}:${asset.line_number || 1}`}>
-                    Location: <span className="text-indigo-700">{asset.file}:{asset.line_number || 1}</span> &bull; Criticality: {asset.business_criticality}
+                  <div className="text-xs text-slate-400 truncate font-mono" title={`${asset.file}:${asset.line_number || 1}`}>
+                    Location: <span className="text-cyan-300">{asset.file}:{asset.line_number || 1}</span> &bull; Criticality: <span className="text-amber-400">{asset.business_criticality}</span>
                   </div>
 
-                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                    <strong className="text-slate-900">Suggested Action:</strong> {asset.suggested_action}
+                  <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                    <strong className="text-cyan-400 font-mono">Suggested Action:</strong> {asset.suggested_action}
                   </p>
                 </div>
 
                 {/* Right: Recommendation & Metrics */}
-                <div className="flex flex-wrap sm:flex-nowrap items-center justify-between xl:justify-end gap-4 pt-3 xl:pt-0 border-t xl:border-t-0 xl:border-l border-slate-200 xl:pl-5 flex-shrink-0">
+                <div className="flex flex-wrap sm:flex-nowrap items-center justify-between xl:justify-end gap-4 pt-3 xl:pt-0 border-t xl:border-t-0 xl:border-l border-[#1E2D4A] xl:pl-5 flex-shrink-0">
                   <div className="space-y-0.5">
-                    <span className="text-[10px] font-semibold uppercase text-slate-400 block">
+                    <span className="text-[10px] uppercase text-slate-400 block font-semibold">
                       Target PQC Replacement
                     </span>
-                    <div className="font-bold text-xs text-emerald-700 font-mono">
+                    <div className="font-bold text-xs text-emerald-400">
                       {asset.recommended_pqc || 'ML-KEM-768'}
                     </div>
                     {asset.hybrid_alternative && (
-                      <div className="text-[11px] text-indigo-700 font-mono truncate max-w-[180px]" title={asset.hybrid_alternative}>
+                      <div className="text-[10px] text-cyan-300 truncate max-w-[180px]" title={asset.hybrid_alternative}>
                         Hybrid: {asset.hybrid_alternative}
                       </div>
                     )}
                   </div>
 
-                  <div className="space-y-0.5 text-right sm:border-l sm:border-slate-200 sm:pl-4">
-                    <span className="text-[10px] font-semibold uppercase text-slate-400 block text-left sm:text-right">
+                  <div className="space-y-0.5 text-right sm:border-l sm:border-[#1E2D4A] sm:pl-4">
+                    <span className="text-[10px] uppercase text-slate-400 block text-left sm:text-right font-semibold">
                       Effort &amp; Cost
                     </span>
-                    <div className="text-xs font-mono font-bold text-slate-800 text-left sm:text-right">
-                      {asset.estimated_effort_hours}h &bull; <span className="text-emerald-700">${asset.estimated_cost_usd?.toLocaleString() || '2,400'}</span>
+                    <div className="text-xs font-bold text-white text-left sm:text-right">
+                      {asset.estimated_effort_hours}h &bull; <span className="text-emerald-400">${asset.estimated_cost_usd?.toLocaleString() || '2,400'}</span>
                     </div>
-                    <div className="text-[10px] font-mono text-slate-500 text-left sm:text-right">
-                      Latency: <span className="text-amber-700 font-semibold">{asset.latency_impact}</span>
+                    <div className="text-[10px] text-slate-400 text-left sm:text-right">
+                      Latency: <span className="text-amber-400 font-semibold">{asset.latency_impact}</span>
                     </div>
                   </div>
 
                   <button
                     onClick={() => onSelectAsset(asset)}
-                    className="px-3.5 py-2 rounded-lg text-xs font-semibold bg-white hover:bg-blue-50 text-slate-800 hover:text-blue-700 border border-slate-200 hover:border-blue-300 transition flex items-center gap-1.5 shadow-xs flex-shrink-0"
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0D1730] hover:bg-cyan-500/20 text-cyan-400 border border-[#1E2D4A] hover:border-cyan-500/50 transition flex items-center gap-1.5 flex-shrink-0"
                   >
                     <span>Inspect</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                    <ChevronRight className="w-3.5 h-3.5 text-cyan-400" />
                   </button>
                 </div>
 

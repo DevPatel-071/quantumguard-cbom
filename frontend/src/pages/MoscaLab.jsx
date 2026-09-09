@@ -9,7 +9,8 @@ import {
   ArrowRight, 
   Zap,
   Calendar,
-  Layers
+  Layers,
+  Info
 } from 'lucide-react';
 import { simulateMosca } from '../services/api';
 
@@ -97,24 +98,34 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
   };
 
   return (
-    <div className="p-6 sm:p-8 space-y-8 max-w-6xl mx-auto">
+    <div className="p-6 sm:p-8 space-y-6 max-w-7xl mx-auto command-grid">
       
       {/* Title */}
-      <div className="space-y-1">
-        <h1 className="text-2xl font-extrabold text-slate-100 tracking-tight flex items-center gap-3">
-          <Sliders className="w-6 h-6 text-amber-400" />
-          <span>Mosca's Theorem Simulation Lab (X + Y &gt; Z)</span>
-        </h1>
-        <p className="text-xs text-slate-400">
-          Simulate quantum urgency timelines dynamically to assess Harvest-Now-Decrypt-Later (HNDL) exposure windows and recalculate risk across all cryptographic assets.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E2D4A]">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono tracking-widest text-cyan-400 uppercase bg-cyan-950/60 border border-cyan-800/60 px-2 py-0.5 rounded">
+              MATHEMATICAL URGENCY CALCULUS
+            </span>
+            <span className="text-[10px] font-mono text-slate-400">
+              X + Y &gt; Z MODELING
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+            <Sliders className="w-6 h-6 text-amber-400" />
+            <span>Mosca's Theorem Simulation Lab (X + Y &gt; Z)</span>
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Simulate quantum urgency timelines dynamically to assess Harvest-Now-Decrypt-Later (HNDL) exposure windows and recalculate risk across all cryptographic assets.
+          </p>
+        </div>
       </div>
 
       {/* Formula & Urgency Indicator Hero */}
-      <div className={`p-6 rounded-3xl border transition-all duration-300 ${
+      <div className={`p-6 rounded-xl command-card border transition-all duration-300 ${
         isUrgent 
-          ? 'bg-gradient-to-br from-rose-950/40 via-slate-900 to-slate-900 border-rose-500/40 shadow-xl shadow-rose-500/10' 
-          : 'bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-900 border-emerald-500/40 shadow-xl shadow-emerald-500/10'
+          ? 'border-rose-500/50 shadow-rose-glow' 
+          : 'border-emerald-500/50 shadow-sm'
       }`}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           
@@ -122,8 +133,8 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
             <div className="flex items-center gap-2">
               <span className={`px-3 py-1 rounded-full text-xs font-bold font-mono border ${
                 isUrgent 
-                  ? 'bg-rose-500/20 text-rose-400 border-rose-500/40' 
-                  : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                  ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' 
+                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
               }`}>
                 {isUrgent ? 'URGENT: MIGRATION REQUIRED IMMEDIATELY' : 'SECURE TIMELINE BUFFER'}
               </span>
@@ -132,7 +143,7 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
               </span>
             </div>
 
-            <div className="text-3xl font-extrabold font-mono tracking-tight text-slate-100">
+            <div className="text-3xl font-extrabold font-mono tracking-tight text-white">
               {xLifetime}y <span className="text-slate-500">+</span> {yMigration}y {' '}
               <span className={isUrgent ? 'text-rose-400' : 'text-emerald-400'}>
                 {isUrgent ? '>' : '<'}
@@ -140,10 +151,10 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
               {zQuantum}y
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
+            <p className="text-xs text-slate-300 leading-relaxed max-w-2xl font-sans">
               {isUrgent ? (
                 <>
-                  Total exposure <strong className="text-rose-400">{xPlusY} years</strong> exceeds the estimated quantum computer timeline (<strong className="text-purple-400">{zQuantum} years</strong>) by <strong className="text-rose-400">{diff} years</strong>. 
+                  Total exposure <strong className="text-rose-400">{xPlusY} years</strong> exceeds the estimated quantum computer timeline (<strong className="text-indigo-300">{zQuantum} years</strong>) by <strong className="text-rose-400">{diff} years</strong>. 
                   Adversaries capturing network traffic today can store encrypted payloads and decrypt them before confidentiality requirements expire.
                 </>
               ) : (
@@ -154,14 +165,14 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2 text-center">
-            <div className="text-[11px] text-slate-400 font-mono uppercase">
+          <div className="p-4 rounded-xl bg-[#050A14] border border-[#1E2D4A] space-y-2 text-center font-mono">
+            <div className="text-[10px] text-slate-400 uppercase">
               HNDL Decryption Window
             </div>
-            <div className={`text-3xl font-black font-mono ${hndlExposure > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+            <div className={`text-3xl font-black ${hndlExposure > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
               {hndlExposure} Years
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[10px] text-slate-500 font-sans">
               {hndlExposure > 0 ? 'Duration data remains exposed post-CRQC' : 'Zero retroactive exposure'}
             </p>
           </div>
@@ -173,15 +184,15 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Sliders Panel */}
-        <div className="lg:col-span-2 p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-6">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-            <span className="text-sm font-bold text-slate-200">
+        <div className="lg:col-span-2 p-6 rounded-xl command-card space-y-6">
+          <div className="flex items-center justify-between pb-2 border-b border-[#1E2D4A]">
+            <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
               Interactive Parameter Tuning
             </span>
             <button
               onClick={handleSimulate}
               disabled={isSimulating}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-bold bg-sky-500 hover:bg-sky-400 text-white transition shadow-sm shadow-sky-500/20"
+              className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-mono font-bold bg-cyan-500 hover:bg-cyan-400 text-black transition shadow-cyan-glow"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSimulating ? 'animate-spin' : ''}`} />
               <span>Recalculate CBOM Risk</span>
@@ -189,13 +200,13 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
           </div>
 
           {/* Slider X */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-xs">
+          <div className="space-y-2 font-mono text-xs">
+            <div className="flex justify-between items-center">
               <div>
-                <span className="font-bold text-sky-400 font-mono">X : Data / Information Lifetime</span>
-                <p className="text-[11px] text-slate-400">Years data must remain confidential or signatures verified</p>
+                <span className="font-bold text-cyan-400">X : Data / Information Lifetime</span>
+                <p className="text-[10px] text-slate-400 font-sans">Years data must remain confidential or signatures verified</p>
               </div>
-              <span className="text-base font-bold font-mono text-sky-400 bg-sky-500/10 px-3 py-1 rounded-lg border border-sky-500/30">
+              <span className="text-base font-bold text-cyan-400 bg-cyan-950/60 px-3 py-1 rounded-lg border border-cyan-500/30">
                 {xLifetime} yrs
               </span>
             </div>
@@ -206,9 +217,9 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
               step="1"
               value={xLifetime}
               onChange={(e) => setXLifetime(parseFloat(e.target.value))}
-              className="w-full h-2 rounded-lg bg-slate-800 accent-sky-400 cursor-pointer"
+              className="w-full h-2 rounded-lg bg-slate-800 accent-cyan-400 cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+            <div className="flex justify-between text-[10px] text-slate-500">
               <span>1 yr (Ephemeral)</span>
               <span>15 yrs (Financial)</span>
               <span>35 yrs (National Sec)</span>
@@ -216,13 +227,13 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
           </div>
 
           {/* Slider Y */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-xs">
+          <div className="space-y-2 font-mono text-xs">
+            <div className="flex justify-between items-center">
               <div>
-                <span className="font-bold text-indigo-400 font-mono">Y : Migration & Deployment Time</span>
-                <p className="text-[11px] text-slate-400">Years to re-architect, test, deploy PQC, and rotate keys/certs</p>
+                <span className="font-bold text-indigo-400">Y : Migration &amp; Deployment Time</span>
+                <p className="text-[10px] text-slate-400 font-sans">Years to re-architect, test, deploy PQC, and rotate keys/certs</p>
               </div>
-              <span className="text-base font-bold font-mono text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-lg border border-indigo-500/30">
+              <span className="text-base font-bold text-indigo-400 bg-indigo-950/60 px-3 py-1 rounded-lg border border-indigo-500/30">
                 {yMigration} yrs
               </span>
             </div>
@@ -235,7 +246,7 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
               onChange={(e) => setYMigration(parseFloat(e.target.value))}
               className="w-full h-2 rounded-lg bg-slate-800 accent-indigo-400 cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+            <div className="flex justify-between text-[10px] text-slate-500">
               <span>0.5 yr (Rapid API)</span>
               <span>5 yrs (Enterprise)</span>
               <span>15 yrs (Legacy HW)</span>
@@ -243,13 +254,13 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
           </div>
 
           {/* Slider Z */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-xs">
+          <div className="space-y-2 font-mono text-xs">
+            <div className="flex justify-between items-center">
               <div>
-                <span className="font-bold text-purple-400 font-mono">Z : Quantum Threat Timeline</span>
-                <p className="text-[11px] text-slate-400">Estimated years until a Cryptographically Relevant Quantum Computer (CRQC)</p>
+                <span className="font-bold text-rose-400">Z : Quantum Threat Timeline</span>
+                <p className="text-[10px] text-slate-400 font-sans">Estimated years until a Cryptographically Relevant Quantum Computer (CRQC)</p>
               </div>
-              <span className="text-base font-bold font-mono text-purple-400 bg-purple-500/10 px-3 py-1 rounded-lg border border-purple-500/30">
+              <span className="text-base font-bold text-rose-400 bg-rose-950/60 px-3 py-1 rounded-lg border border-rose-500/30">
                 {zQuantum} yrs
               </span>
             </div>
@@ -260,19 +271,19 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
               step="1"
               value={zQuantum}
               onChange={(e) => setZQuantum(parseFloat(e.target.value))}
-              className="w-full h-2 rounded-lg bg-slate-800 accent-purple-400 cursor-pointer"
+              className="w-full h-2 rounded-lg bg-slate-800 accent-rose-400 cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-              <span>5 yrs (Aggressive Threat)</span>
-              <span>15-17 yrs (Consensus Est.)</span>
+            <div className="flex justify-between text-[10px] text-slate-500">
+              <span>5 yrs (Aggressive)</span>
+              <span>15-17 yrs (Consensus)</span>
               <span>30 yrs (Conservative)</span>
             </div>
           </div>
         </div>
 
         {/* Industry Presets Panel */}
-        <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
-          <span className="text-sm font-bold text-slate-200 block pb-2 border-b border-slate-800">
+        <div className="p-6 rounded-xl command-card space-y-4 font-mono text-xs">
+          <span className="text-xs font-bold text-white uppercase block pb-2 border-b border-[#1E2D4A]">
             Industry Simulation Presets
           </span>
 
@@ -281,15 +292,15 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
               <div
                 key={idx}
                 onClick={() => applyPreset(p)}
-                className="p-3.5 rounded-xl bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 cursor-pointer transition space-y-1.5"
+                className="p-3 rounded-lg bg-[#050A14] hover:bg-[#0D1730] border border-[#1E2D4A] hover:border-cyan-500/50 cursor-pointer transition space-y-1"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-slate-200">{p.name}</span>
-                  <span className="text-[10px] font-mono text-sky-400">
+                  <span className="font-bold text-xs text-white">{p.name}</span>
+                  <span className="text-[10px] text-cyan-400">
                     X:{p.x}y | Y:{p.y}y | Z:{p.z}y
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
                   {p.desc}
                 </p>
               </div>
@@ -301,24 +312,24 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
 
       {/* Affected CBOM Assets Table under this Simulation */}
       {cbomReport?.assets && (
-        <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="rounded-xl border border-[#1E2D4A] bg-[#080E1E] shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-[#1E2D4A] flex items-center justify-between font-mono text-xs">
             <div>
-              <h3 className="text-sm font-bold text-slate-200">
-                Asset Impact Evaluation under Current Simulation Parameters
+              <h3 className="font-bold text-white uppercase">
+                Asset Impact Evaluation under Simulation Parameters
               </h3>
-              <p className="text-xs text-slate-400">
-                Showing assets sorted by calculated quantum risk under X={xLifetime}y, Y={yMigration}y, Z={zQuantum}y
+              <p className="text-[11px] text-slate-400 font-sans">
+                Sorted by simulated quantum vulnerability under X={xLifetime}y, Y={yMigration}y, Z={zQuantum}y
               </p>
             </div>
-            <span className="text-xs font-mono text-slate-400">
+            <span className="text-cyan-400">
               {cbomReport.assets.length} Assets
             </span>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
+          <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 font-mono uppercase text-[11px] border-b border-slate-800">
+              <thead className="bg-[#050A14] text-slate-400 font-mono uppercase text-[11px] border-b border-[#1E2D4A]">
                 <tr>
                   <th className="p-3">Rank</th>
                   <th className="p-3">Algorithm</th>
@@ -328,35 +339,35 @@ export default function MoscaLab({ cbomReport, onUpdateCBOM, onSelectAsset }) {
                   <th className="p-3">Target PQC Alternative</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-sans">
+              <tbody className="divide-y divide-[#1E2D4A]/40 font-mono text-xs">
                 {cbomReport.assets.slice(0, 8).map((asset) => (
                   <tr
                     key={asset.asset_id}
                     onClick={() => onSelectAsset(asset)}
-                    className="hover:bg-slate-800/40 cursor-pointer transition"
+                    className="hover:bg-[#0D1730]/70 cursor-pointer transition border-b border-[#1E2D4A]/20"
                   >
-                    <td className="p-3 font-mono font-bold text-sky-400">
+                    <td className="p-3 font-bold text-cyan-400">
                       #{asset.migration_priority}
                     </td>
-                    <td className="p-3 font-bold text-slate-200">
+                    <td className="p-3 font-bold text-white">
                       {asset.algorithm} {asset.key_size ? `(${asset.key_size}b)` : ''}
                     </td>
-                    <td className="p-3 font-mono text-indigo-300">
+                    <td className="p-3 text-cyan-300">
                       {asset.file}:{asset.line_number || 1}
                     </td>
                     <td className="p-3">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
                         asset.mosca?.is_urgent 
-                          ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
-                          : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                          ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                       }`}>
                         {asset.mosca?.urgency || 'STANDARD'}
                       </span>
                     </td>
-                    <td className="p-3 font-mono font-bold text-slate-200">
+                    <td className="p-3 font-bold text-white">
                       {asset.risk_score} / 100
                     </td>
-                    <td className="p-3 text-emerald-400 font-medium">
+                    <td className="p-3 text-emerald-400">
                       {asset.recommended_pqc}
                     </td>
                   </tr>

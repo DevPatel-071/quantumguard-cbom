@@ -3,17 +3,20 @@ import {
   LayoutDashboard, 
   ScanSearch, 
   Layers, 
-  Network,
+  Network, 
   ShieldAlert, 
   ShieldCheck,
   BookOpen, 
-  FileText,
-  Compass,
-  Gauge,
-  Sliders,
-  Activity,
-  ChevronLeft,
-  ChevronRight
+  FileText, 
+  Compass, 
+  Gauge, 
+  Calculator,
+  Activity, 
+  ChevronLeft, 
+  ChevronRight,
+  Cpu,
+  Terminal,
+  Radio
 } from 'lucide-react';
 
 export default function Sidebar({ 
@@ -21,99 +24,98 @@ export default function Sidebar({
   onSelectTab, 
   assetCount = 0, 
   readinessScore = null,
-  collapsed,
-  onToggleCollapse
+  collapsed, 
+  onToggleCollapse 
 }) {
   const navSections = [
     {
-      title: 'OVERVIEW',
+      title: 'COMMAND',
       items: [
         {
           id: 'dashboard',
-          label: 'Executive Command Center',
-          shortLabel: 'Dashboard',
+          label: 'Executive Center',
           icon: LayoutDashboard,
-          badge: null
+          badge: 'LIVE',
+          badgeColor: 'bg-cyan-950/80 text-cyan-300 border-cyan-500/40'
         }
       ]
     },
     {
-      title: 'DISCOVER',
+      title: 'DISCOVERY',
       items: [
         {
           id: 'scan',
           label: 'Scan Studio',
-          shortLabel: 'Scanner',
           icon: ScanSearch,
           badge: null
         },
         {
           id: 'cbom',
           label: 'CBOM Inventory',
-          shortLabel: 'CBOM',
           icon: Layers,
           badge: assetCount > 0 ? `${assetCount}` : null,
-          badgeColor: 'bg-slate-100 text-slate-700 border-slate-300'
+          badgeColor: 'bg-blue-950/80 text-blue-300 border-blue-500/40'
         },
         {
           id: 'dependencies',
           label: 'Dependency Intelligence',
-          shortLabel: 'Dependencies',
           icon: Network,
-          badge: 'Graph',
-          badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200'
+          badge: 'GRAPH',
+          badgeColor: 'bg-indigo-950/80 text-indigo-300 border-indigo-500/40'
         }
       ]
     },
     {
-      title: 'ANALYZE',
+      title: 'INTELLIGENCE',
       items: [
         {
-          id: 'fmea',
-          label: 'Quantum FMEA Analysis',
-          shortLabel: 'FMEA',
-          icon: ShieldAlert,
-          badge: 'RPN',
-          badgeColor: 'bg-rose-50 text-rose-700 border-rose-200'
+          id: 'readiness',
+          label: 'Quantum Risk',
+          icon: Gauge,
+          badge: readinessScore !== null ? `${readinessScore}` : null,
+          badgeColor: readinessScore >= 75 
+            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40' 
+            : 'bg-amber-950/80 text-amber-300 border-amber-500/40'
         },
         {
-          id: 'readiness',
-          label: 'Quantum Risk & Mosca',
-          shortLabel: 'Risk & Mosca',
-          icon: Gauge,
-          badge: readinessScore !== null ? `${readinessScore}/100` : null,
-          badgeColor: readinessScore >= 75 
-            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-            : 'bg-amber-50 text-amber-700 border-amber-200'
+          id: 'fmea',
+          label: 'FMEA Analysis',
+          icon: ShieldAlert,
+          badge: 'RPN',
+          badgeColor: 'bg-rose-950/80 text-rose-300 border-rose-500/40'
         },
         {
           id: 'knowledge-base',
           label: 'Crypto Knowledge Base',
-          shortLabel: 'Knowledge Base',
           icon: BookOpen,
           badge: '30+',
-          badgeColor: 'bg-slate-100 text-slate-600 border-slate-200'
+          badgeColor: 'bg-slate-900 text-slate-400 border-slate-700'
         }
       ]
     },
     {
-      title: 'PLAN',
+      title: 'MIGRATION',
       items: [
         {
           id: 'recommendations',
           label: 'PQC Recommendations',
-          shortLabel: 'PQC Specs',
           icon: ShieldCheck,
           badge: 'NIST',
-          badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+          badgeColor: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40'
         },
         {
           id: 'roadmap',
           label: 'Migration Roadmap',
-          shortLabel: 'Roadmap',
           icon: Compass,
-          badge: '4-Phase',
-          badgeColor: 'bg-blue-50 text-blue-700 border-blue-200'
+          badge: '4-PHASE',
+          badgeColor: 'bg-blue-950/80 text-blue-300 border-blue-500/40'
+        },
+        {
+          id: 'simulators',
+          label: 'Cost Estimator',
+          icon: Calculator,
+          badge: 'BUDGET',
+          badgeColor: 'bg-purple-950/80 text-purple-300 border-purple-500/40'
         }
       ]
     },
@@ -123,37 +125,28 @@ export default function Sidebar({
         {
           id: 'monitoring',
           label: 'Continuous Monitoring',
-          shortLabel: 'Monitoring',
           icon: Activity,
-          badge: 'Live',
-          badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+          badge: 'ACTIVE',
+          badgeColor: 'bg-emerald-950/90 text-emerald-300 border-emerald-400/50'
         }
       ]
     },
     {
-      title: 'REPORT & LAB',
+      title: 'REPORTS',
       items: [
         {
           id: 'reports',
           label: 'Audit Reports',
-          shortLabel: 'Reports',
           icon: FileText,
-          badge: 'HTML/JSON'
-        },
-        {
-          id: 'simulators',
-          label: 'Simulation Lab',
-          shortLabel: 'Simulators',
-          icon: Sliders,
-          badge: 'Interactive',
-          badgeColor: 'bg-purple-50 text-purple-700 border-purple-200'
+          badge: '1.6 SPEC',
+          badgeColor: 'bg-cyan-950/80 text-cyan-300 border-cyan-500/40'
         }
       ]
     }
   ];
 
   return (
-    <aside className={`flex-shrink-0 bg-white border-r border-slate-200 flex flex-col justify-between select-none z-20 h-[calc(100vh-4rem)] transition-all duration-200 shadow-xs ${
+    <aside className={`flex-shrink-0 bg-command-bg/95 border-r border-command-border/80 flex flex-col justify-between select-none z-30 h-[calc(100vh-4rem)] transition-all duration-200 shadow-2xl ${
       collapsed ? 'w-20' : 'w-64 sm:w-[260px]'
     }`}>
       
@@ -162,11 +155,12 @@ export default function Sidebar({
         {navSections.map((section, sIdx) => (
           <div key={sIdx} className="space-y-1">
             {!collapsed ? (
-              <div className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">
-                {section.title}
+              <div className="px-3 text-[10px] font-mono font-bold text-slate-300 uppercase tracking-widest flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-cyan-400/80" />
+                <span>{section.title}</span>
               </div>
             ) : (
-              <div className="w-full h-px bg-slate-200 my-2" />
+              <div className="w-full h-px bg-command-border/80 my-2" />
             )}
 
             <div className="space-y-0.5">
@@ -178,31 +172,31 @@ export default function Sidebar({
                     key={item.id}
                     title={collapsed ? `${item.label} (${section.title})` : undefined}
                     onClick={() => onSelectTab(item.id)}
-                    className={`w-full flex items-center ${collapsed ? 'justify-center py-2.5' : 'justify-between px-3 py-2'} rounded-lg text-xs transition-colors duration-150 group text-left relative ${
+                    className={`w-full flex items-center ${collapsed ? 'justify-center py-2.5' : 'justify-between px-3 py-2'} rounded-xl text-xs transition-all duration-150 group text-left relative ${
                       isActive
-                        ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200/80 shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
+                        ? 'bg-gradient-to-r from-cyan-950/80 to-blue-950/50 text-cyan-300 font-bold border border-cyan-500/40 shadow-cyan-glow'
+                        : 'text-slate-400 hover:text-white hover:bg-command-card/80 border border-transparent font-medium'
                     }`}
                   >
                     <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2.5 min-w-0 flex-1 pr-2'}`}>
-                      <Icon className={`w-4 h-4 flex-shrink-0 transition-colors ${
-                        isActive ? 'text-blue-600' : 'text-slate-500 group-hover:text-slate-700'
+                      <Icon className={`w-4 h-4 flex-shrink-0 transition-all ${
+                        isActive ? 'text-command-cyan glow-cyan' : 'text-slate-400 group-hover:text-cyan-300'
                       }`} />
                       {!collapsed && (
-                        <span className="truncate">{item.label}</span>
+                        <span className="truncate font-sans">{item.label}</span>
                       )}
                     </div>
 
                     {!collapsed && item.badge && (
-                      <span className={`flex-shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold font-mono border ${
-                        item.badgeColor || 'bg-slate-100 text-slate-600 border-slate-200'
+                      <span className={`flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border ${
+                        item.badgeColor || 'bg-slate-900 text-slate-400 border-slate-700'
                       }`}>
                         {item.badge}
                       </span>
                     )}
 
                     {collapsed && isActive && (
-                      <span className="absolute right-1 w-1.5 h-1.5 rounded-full bg-blue-600" />
+                      <span className="absolute right-1 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-cyan-glow animate-pulse" />
                     )}
                   </button>
                 );
@@ -212,20 +206,20 @@ export default function Sidebar({
         ))}
       </div>
 
-      {/* Bottom Footer & Collapse Toggle */}
-      <div className="p-3 border-t border-slate-200 bg-slate-50/80">
+      {/* Bottom Status & Collapse Toggle */}
+      <div className="p-3 border-t border-command-border/80 bg-command-surface/90">
         {!collapsed && (
-          <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1 mb-2 shadow-xs">
+          <div className="p-2.5 rounded-xl bg-command-card/80 border border-command-border space-y-1 mb-2 shadow-inner">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[11px] font-bold text-slate-800">QUANTECT Core</span>
+              <div className="flex items-center gap-1.5 font-mono text-[10px]">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-emerald-glow animate-pulse" />
+                <span className="font-bold text-white">ENGINE ONLINE</span>
               </div>
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 uppercase font-mono">
+              <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 uppercase">
                 FIPS 203/204
               </span>
             </div>
-            <p className="text-[10px] text-slate-500 leading-tight">
+            <p className="text-[9px] text-slate-400 font-mono tracking-wide leading-tight">
               Prepare Today, Secure Tomorrow.
             </p>
           </div>
@@ -233,13 +227,13 @@ export default function Sidebar({
 
         <button
           onClick={onToggleCollapse}
-          className="w-full flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white border border-slate-200 transition shadow-xs"
+          className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-mono text-slate-400 hover:text-cyan-300 hover:bg-command-card border border-command-border transition-all shadow-xs"
           title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
-          {collapsed ? <ChevronRight className="w-4 h-4 text-blue-600" /> : (
+          {collapsed ? <ChevronRight className="w-4 h-4 text-cyan-400" /> : (
             <>
-              <ChevronLeft className="w-4 h-4 text-slate-500" />
-              <span className="text-[11px]">Collapse Navigation</span>
+              <ChevronLeft className="w-4 h-4 text-slate-400" />
+              <span className="text-[11px] font-medium">Collapse Navigation</span>
             </>
           )}
         </button>
