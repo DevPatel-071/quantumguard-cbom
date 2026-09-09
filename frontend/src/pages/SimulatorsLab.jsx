@@ -14,6 +14,8 @@ import {
   Cpu
 } from 'lucide-react';
 import { fetchLatencyImpact, simulateMosca, simulateCostEstimate } from '../services/api';
+import { useVisualIntelligenceData } from '../hooks/useVisualIntelligenceData';
+import DynamicMigrationCostEngine from '../components/visuals/DynamicMigrationCostEngine';
 
 export default function SimulatorsLab({ cbomReport, onUpdateCBOM }) {
   const [activeTab, setActiveTab] = useState('cost'); // 'cost' | 'latency' | 'hndl'
@@ -30,13 +32,15 @@ export default function SimulatorsLab({ cbomReport, onUpdateCBOM }) {
   const [zQuantumTimeline, setZQuantumTimeline] = useState(10.0);
   const [hndlRecalculating, setHndlRecalculating] = useState(false);
 
-  // --- COST ESTIMATOR STATE ---
-  const [devRate, setDevRate] = useState(120.0);
-  const [qaRate, setQaRate] = useState(90.0);
-  const [infraCost, setInfraCost] = useState(500.0);
-  const [complexityMult, setComplexityMult] = useState(1.0);
-  const [costResult, setCostResult] = useState(cbomReport?.cost_summary || null);
-  const [costLoading, setCostLoading] = useState(false);
+  // --- COST ESTIMATOR CUSTOM STATE FOR REACTIVE VISUAL ENGINE ---
+  const [customCostParams, setCustomCostParams] = useState({
+    devRate: 120.0,
+    qaRate: 90.0,
+    infraCost: 500.0,
+    complexityMult: 1.0
+  });
+
+  const { costEngineData } = useVisualIntelligenceData(cbomReport, customCostParams);
 
   // Load initial latency benchmark
   useEffect(() => {
@@ -87,26 +91,6 @@ export default function SimulatorsLab({ cbomReport, onUpdateCBOM }) {
       });
   };
 
-  const handleRecalculateCost = () => {
-    if (!cbomReport || !cbomReport.assets) return;
-    setCostLoading(true);
-    simulateCostEstimate({
-      assets: cbomReport.assets,
-      developer_hourly_rate: devRate,
-      qa_testing_hourly_rate: qaRate,
-      infra_cost_per_asset: infraCost,
-      complexity_multiplier: complexityMult
-    })
-      .then((data) => {
-        setCostResult(data);
-        setCostLoading(false);
-      })
-      .catch((err) => {
-        console.error('Cost calculation error:', err);
-        setCostLoading(false);
-      });
-  };
-
   const isUrgent = (xDataLifetime + yMigrationTime) > zQuantumTimeline;
   const hndlExposureYears = isUrgent ? Math.round((xDataLifetime + yMigrationTime - zQuantumTimeline) * 10) / 10 : 0;
 
@@ -144,7 +128,7 @@ export default function SimulatorsLab({ cbomReport, onUpdateCBOM }) {
             }`}
           >
             <DollarSign className="w-3.5 h-3.5" />
-            <span>Cost & Effort</span>
+            <span>Cost &amp; Effort</span>
           </button>
 
           <button
@@ -156,7 +140,7 @@ export default function SimulatorsLab({ cbomReport, onUpdateCBOM }) {
             }`}
           >
             <Zap className="w-3.5 h-3.5" />
-            <span>Latency & Bandwidth</span>
+            <span>Latency &amp; Bandwidth</span>
           </button>
 
           <button
@@ -173,168 +157,12 @@ export default function SimulatorsLab({ cbomReport, onUpdateCBOM }) {
         </div>
       </div>
 
-      {/* 1. MIGRATION COST & EFFORT CONFIGURATOR */}
+      {/* 1. SIGNATURE VISUALIZATION 3: DYNAMIC MIGRATION COST ENGINE */}
       {activeTab === 'cost' && (
-        <div className="space-y-6">
-          <div className="command-card p-6 space-y-6">
-            <div className="space-y-1">
-              <h2 className="text-sm font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-emerald-400" />
-                <span>Migration Cost &amp; Engineering Effort Configurator</span>
-              </h2>
-              <p className="text-xs text-slate-400">
-                Transparent and configurable estimation model. Adjust hourly billing rates and infrastructure multipliers to calculate exact portfolio migration budgets.
-              </p>
-            </div>
-
-            {/* Input Sliders */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-xl bg-[#050A14] border border-[#1E2D4A] text-xs font-mono">
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Developer Rate</span>
-                  <span className="font-bold text-emerald-400">${devRate}/hr</span>
-                </div>
-                <input
-                  type="range"
-                  min="60"
-                  max="250"
-                  step="10"
-                  value={devRate}
-                  onChange={(e) => setDevRate(parseFloat(e.target.value))}
-                  className="w-full accent-cyan-400 bg-slate-800"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">QA / Security Testing</span>
-                  <span className="font-bold text-cyan-400">${qaRate}/hr</span>
-                </div>
-                <input
-                  type="range"
-                  min="50"
-                  max="200"
-                  step="10"
-                  value={qaRate}
-                  onChange={(e) => setQaRate(parseFloat(e.target.value))}
-                  className="w-full accent-cyan-400 bg-slate-800"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Infra / Asset</span>
-                  <span className="font-bold text-indigo-400">${infraCost}</span>
-                </div>
-                <input
-                  type="range"
-                  min="100"
-                  max="1500"
-                  step="50"
-                  value={infraCost}
-                  onChange={(e) => setInfraCost(parseFloat(e.target.value))}
-                  className="w-full accent-indigo-400 bg-slate-800"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Complexity Multiplier</span>
-                  <span className="font-bold text-amber-400">{complexityMult}x</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.8"
-                  max="2.5"
-                  step="0.1"
-                  value={complexityMult}
-                  onChange={(e) => setComplexityMult(parseFloat(e.target.value))}
-                  className="w-full accent-amber-400 bg-slate-800"
-                />
-              </div>
-            </div>
-
-            {/* Recalculate Button */}
-            <div className="flex justify-end">
-              <button
-                onClick={handleRecalculateCost}
-                disabled={costLoading}
-                className="px-5 py-2 rounded-lg text-xs font-mono font-bold bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black shadow-md flex items-center gap-2 transition disabled:opacity-50"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${costLoading ? 'animate-spin' : ''}`} />
-                <span>Recalculate Portfolio Budget</span>
-              </button>
-            </div>
-
-            {/* Cost Results Output & Breakdown Visual */}
-            {costResult && (
-              <div className="space-y-5 pt-2">
-                {/* 4 Result Tiles */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                  <div className="p-4 rounded-xl bg-[#050A14] border border-[#1E2D4A] space-y-1 font-mono">
-                    <span className="text-[10px] text-slate-400 uppercase">Engineering Effort</span>
-                    <div className="text-xl font-bold text-white">{costResult.total_engineering_hours} hrs</div>
-                    <span className="text-xs text-emerald-400 font-bold">${costResult.engineering_cost_usd?.toLocaleString()}</span>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[#050A14] border border-[#1E2D4A] space-y-1 font-mono">
-                    <span className="text-[10px] text-slate-400 uppercase">QA &amp; Verification</span>
-                    <div className="text-xl font-bold text-white">{costResult.total_testing_hours} hrs</div>
-                    <span className="text-xs text-cyan-400 font-bold">${costResult.testing_cost_usd?.toLocaleString()}</span>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[#050A14] border border-[#1E2D4A] space-y-1 font-mono">
-                    <span className="text-[10px] text-slate-400 uppercase">Infra &amp; PKI Setup</span>
-                    <div className="text-xl font-bold text-white">${costResult.infrastructure_cost_usd?.toLocaleString()}</div>
-                    <span className="text-[10px] text-slate-400">Certificates &amp; HSM</span>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/50 space-y-1 font-mono">
-                    <span className="text-[10px] text-emerald-300 font-bold uppercase">TOTAL ESTIMATED BUDGET</span>
-                    <div className="text-2xl font-black text-emerald-400">${costResult.total_estimated_cost_usd?.toLocaleString()}</div>
-                    <span className="text-[10px] text-slate-300">Tier: {costResult.cost_tier}</span>
-                  </div>
-                </div>
-
-                {/* Visual Cost vs Risk Reduction ROI Visualizer */}
-                <div className="p-5 rounded-xl bg-[#050A14] border border-[#1E2D4A] space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <TrendingDown className="w-4 h-4 text-emerald-400" />
-                      <h4 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                        Investment vs Quantum Risk Reduction Trajectory
-                      </h4>
-                    </div>
-                    <span className="text-[10px] font-mono text-emerald-400">98% Risk Elimination ROI</span>
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-3 text-center font-mono text-xs pt-1">
-                    <div className="p-3 rounded-lg bg-[#080E1E] border border-rose-500/30">
-                      <div className="text-[10px] text-rose-400">Phase 1 ($4.8k)</div>
-                      <div className="text-base font-bold text-white mt-0.5">-55% Risk</div>
-                      <div className="text-[9px] text-slate-500">Critical KEX & APIs</div>
-                    </div>
-                    <div className="p-3 rounded-lg bg-[#080E1E] border border-orange-500/30">
-                      <div className="text-[10px] text-orange-400">Phase 2 ($3.2k)</div>
-                      <div className="text-base font-bold text-white mt-0.5">-25% Risk</div>
-                      <div className="text-[9px] text-slate-500">Hybrid Tokens & PKI</div>
-                    </div>
-                    <div className="p-3 rounded-lg bg-[#080E1E] border border-cyan-500/30">
-                      <div className="text-[10px] text-cyan-400">Phase 3 ($2.4k)</div>
-                      <div className="text-base font-bold text-white mt-0.5">-15% Risk</div>
-                      <div className="text-[9px] text-slate-500">Storage & Batch</div>
-                    </div>
-                    <div className="p-3 rounded-lg bg-[#080E1E] border border-emerald-500/30">
-                      <div className="text-[10px] text-emerald-400">Phase 4 ($1.0k)</div>
-                      <div className="text-base font-bold text-emerald-400 mt-0.5">Zero Risk</div>
-                      <div className="text-[9px] text-slate-500">Continuous Audit</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <DynamicMigrationCostEngine 
+          visualData={{ costEngineData }}
+          onParamsChange={(newParams) => setCustomCostParams(newParams)}
+        />
       )}
 
       {/* 2. LATENCY & BANDWIDTH IMPACT SIMULATOR */}
@@ -403,7 +231,7 @@ export default function SimulatorsLab({ cbomReport, onUpdateCBOM }) {
                 </div>
 
                 <div className="command-card p-4 space-y-1 font-mono">
-                  <span className="text-[10px] text-slate-400 uppercase">CPU Execution</span>
+                  <span className="text-[10px] text-emerald-400 uppercase">CPU Execution</span>
                   <div className="text-lg font-bold text-emerald-400">FASTER (NTT)</div>
                   <span className="text-[10px] text-slate-500">Matrix poly mult</span>
                 </div>

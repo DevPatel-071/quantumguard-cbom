@@ -4,23 +4,28 @@ import {
   RefreshCw, 
   Bell, 
   Layers, 
-  ArrowRight,
-  ShieldAlert,
-  Radio,
-  Clock,
-  CheckCircle2,
-  AlertTriangle,
-  Play,
-  Pause,
-  Zap,
-  TrendingUp
+  ArrowRight, 
+  ShieldAlert, 
+  Radio, 
+  Clock, 
+  CheckCircle2, 
+  AlertTriangle, 
+  Play, 
+  Pause, 
+  Zap, 
+  TrendingUp,
+  ExternalLink
 } from 'lucide-react';
 import { fetchMonitoringSummary, updateMonitoringStatus, markAlertRead } from '../services/api';
+import { useVisualIntelligenceData } from '../hooks/useVisualIntelligenceData';
+import LiveCryptographicEcosystem from '../components/visuals/LiveCryptographicEcosystem';
 
 export default function ContinuousMonitoring({ cbomReport, onNavigateToCBOM, onSelectAssetId }) {
   const [monitoringData, setMonitoringData] = useState(cbomReport?.monitoring_summary || null);
   const [loading, setLoading] = useState(false);
   const [selectedSeverity, setSelectedSeverity] = useState('ALL');
+
+  const { ecosystemData } = useVisualIntelligenceData(cbomReport);
 
   useEffect(() => {
     loadSummary();
@@ -69,119 +74,14 @@ export default function ContinuousMonitoring({ cbomReport, onNavigateToCBOM, onS
   };
 
   return (
-    <div className="p-6 sm:p-8 space-y-6 max-w-7xl mx-auto command-grid">
+    <div className="p-6 sm:p-8 space-y-8 max-w-7xl mx-auto command-grid">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E2D4A]">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono tracking-widest text-cyan-400 uppercase bg-cyan-950/60 border border-cyan-800/60 px-2 py-0.5 rounded">
-              CONTINUOUS SURVEILLANCE ENGINE
-            </span>
-            <span className="text-[10px] font-mono text-slate-400">
-              REAL-TIME CRYPTOGRAPHIC TELEMETRY
-            </span>
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <Activity className="w-6 h-6 text-cyan-400" />
-            <span>Continuous Cryptographic Monitoring &amp; Alert Center</span>
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Real-time tracking of cryptographic posture, CBOM drift, dependency updates, and quantum risk elevations across registered pipelines.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>DAEMON ACTIVE (5M POLL)</span>
-          </div>
-
-          <button
-            onClick={loadSummary}
-            disabled={loading}
-            className="p-2 rounded-lg bg-[#0D1730] text-slate-300 hover:text-cyan-400 border border-[#1E2D4A] hover:border-cyan-500/50 shadow-sm transition"
-            title="Refresh Monitoring Stream"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-      </div>
-
-      {/* KPI Overview Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="command-card p-4 font-mono">
-          <span className="text-[10px] text-slate-400 uppercase">Monitored Targets</span>
-          <div className="text-2xl font-bold text-white mt-1">
-            {sources.length || 1}
-          </div>
-          <span className="text-[10px] text-cyan-400 mt-0.5">Active background polling</span>
-        </div>
-
-        <div className="command-card p-4 font-mono">
-          <span className="text-[10px] text-cyan-400 uppercase">Drift &amp; Changes Detected</span>
-          <div className="text-2xl font-bold text-cyan-400 mt-1">
-            {monitoringData?.total_changes_detected || 3}
-          </div>
-          <span className="text-[10px] text-slate-400 mt-0.5">Commits &amp; lib bumps</span>
-        </div>
-
-        <div className="command-card p-4 border-rose-500/30 font-mono">
-          <span className="text-[10px] text-rose-400 uppercase">Unread Security Alerts</span>
-          <div className="text-2xl font-bold text-rose-400 mt-1">
-            {monitoringData?.unread_alerts_count || 2}
-          </div>
-          <span className="text-[10px] text-slate-400 mt-0.5">Require triage action</span>
-        </div>
-
-        <div className="command-card p-4 border-emerald-500/30 font-mono">
-          <span className="text-[10px] text-emerald-400 uppercase">Surveillance Health</span>
-          <div className="text-2xl font-bold text-emerald-400 mt-1">
-            ONLINE
-          </div>
-          <span className="text-[10px] text-slate-400 mt-0.5">0.04s telemetry latency</span>
-        </div>
-      </div>
-
-      {/* Visual Activity & Drift Timeline */}
-      <div className="command-card p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">
-            <TrendingUp className="w-4 h-4 text-cyan-400" />
-            <span>RECENT REPOSITORY CRYPTOGRAPHIC ACTIVITY TIMELINE</span>
-          </div>
-          <span className="text-[10px] font-mono text-slate-400">Live Daemon Feed</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
-          <div className="p-3 rounded-lg bg-[#050A14] border border-[#1E2D4A] flex items-start gap-2.5">
-            <div className="w-2 h-2 rounded-full bg-cyan-400 mt-1 flex-shrink-0 animate-pulse" />
-            <div className="space-y-0.5">
-              <div className="text-white font-bold text-[11px]">CBOM Baseline Synchronized</div>
-              <p className="text-[10px] text-slate-400 font-sans">24 cryptographic components mapped to CycloneDX 1.6 catalog.</p>
-              <span className="text-[9px] text-cyan-400 block pt-1">2 mins ago</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-lg bg-[#050A14] border border-[#1E2D4A] flex items-start gap-2.5">
-            <div className="w-2 h-2 rounded-full bg-rose-400 mt-1 flex-shrink-0" />
-            <div className="space-y-0.5">
-              <div className="text-white font-bold text-[11px]">Shor Vulnerability Alert</div>
-              <p className="text-[10px] text-slate-400 font-sans">RSA-2048 keypair detected in banking auth service module.</p>
-              <span className="text-[9px] text-rose-400 block pt-1">14 mins ago</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-lg bg-[#050A14] border border-[#1E2D4A] flex items-start gap-2.5">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 mt-1 flex-shrink-0" />
-            <div className="space-y-0.5">
-              <div className="text-white font-bold text-[11px]">PQC Remediation Path Ready</div>
-              <p className="text-[10px] text-slate-400 font-sans">ML-KEM-768 hybrid transition blueprint calculated for TLS 1.3.</p>
-              <span className="text-[9px] text-emerald-400 block pt-1">1 hour ago</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* SIGNATURE VISUALIZATION 4: LIVE CRYPTOGRAPHIC ECOSYSTEM */}
+      <LiveCryptographicEcosystem 
+        visualData={{ ecosystemData }}
+        onSelectAssetId={onSelectAssetId}
+        onRefresh={loadSummary}
+      />
 
       {/* Monitored Sources Table */}
       <div className="rounded-xl border border-[#1E2D4A] bg-[#080E1E] shadow-sm overflow-hidden">

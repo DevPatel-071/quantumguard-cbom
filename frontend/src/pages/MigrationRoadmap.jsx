@@ -2,21 +2,26 @@ import React, { useState } from 'react';
 import { 
   Compass, 
   Search, 
-  ChevronRight,
-  Clock,
-  DollarSign,
-  Zap,
-  Layers,
-  ArrowRight,
-  CheckCircle2,
-  Calendar,
-  Sparkles,
-  ShieldCheck
+  ChevronRight, 
+  Clock, 
+  DollarSign, 
+  Zap, 
+  Layers, 
+  ArrowRight, 
+  CheckCircle2, 
+  Calendar, 
+  Sparkles, 
+  ShieldCheck,
+  ExternalLink
 } from 'lucide-react';
+import { useVisualIntelligenceData } from '../hooks/useVisualIntelligenceData';
+import PQCMigrationJourneyVisualizer from '../components/visuals/PQCMigrationJourneyVisualizer';
 
 export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
   const [selectedPhase, setSelectedPhase] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const { migrationJourneyData } = useVisualIntelligenceData(cbomReport);
 
   if (!cbomReport) {
     return (
@@ -56,130 +61,15 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
     }
   };
 
-  const phaseDefinitions = [
-    {
-      id: 'PHASE_1_IMMEDIATE',
-      title: 'PHASE 1: Immediate Remediation',
-      subtitle: 'Critical Shor-vulnerable endpoints & internet-facing key exchanges',
-      window: 'Days 0 – 30',
-      riskCut: '-55% Risk',
-      border: 'border-rose-500/40'
-    },
-    {
-      id: 'PHASE_2_HIGH_PRIORITY',
-      title: 'PHASE 2: Hybrid Pilot & PKI',
-      subtitle: 'Internal services, JWT auth tokens, and composite X.509 dual certs',
-      window: 'Days 30 – 90',
-      riskCut: '-25% Risk',
-      border: 'border-orange-500/40'
-    },
-    {
-      id: 'PHASE_3_PLANNED',
-      title: 'PHASE 3: Full Production Migration',
-      subtitle: 'Bulk database storage, archival payloads, and backend batch encryption',
-      window: 'Days 90 – 180',
-      riskCut: '-15% Risk',
-      border: 'border-cyan-500/40'
-    },
-    {
-      id: 'PHASE_4_MONITOR',
-      title: 'PHASE 4: Verification & Continuous Monitoring',
-      subtitle: 'Automated CI/CD regressions, cryptographic agility, and runtime audit',
-      window: 'Day 180+ Ongoing',
-      riskCut: 'Zero Residual Risk',
-      border: 'border-emerald-500/40'
-    }
-  ];
-
   return (
-    <div className="p-6 sm:p-8 space-y-6 max-w-7xl mx-auto command-grid">
+    <div className="p-6 sm:p-8 space-y-8 max-w-7xl mx-auto command-grid">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E2D4A]">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono tracking-widest text-cyan-400 uppercase bg-cyan-950/60 border border-cyan-800/60 px-2 py-0.5 rounded">
-              STRATEGIC TRANSITION SCHEDULE
-            </span>
-            <span className="text-[10px] font-mono text-slate-400">
-              NIST STANDARDS ALIGNED
-            </span>
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <Compass className="w-6 h-6 text-cyan-400" />
-            <span>Post-Quantum Migration Roadmap</span>
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Intelligent 4-Phase strategic transition schedule dynamically organized by quantum vulnerability, Mosca urgency, and business criticality.
-          </p>
-        </div>
-
-        {rm && (
-          <div className="flex items-center gap-3 text-xs font-mono">
-            <div className="px-3.5 py-1.5 rounded-lg bg-[#0D1730] border border-[#1E2D4A] text-slate-300">
-              Total Effort: <strong className="text-cyan-400 font-mono">{rm.total_effort_hours}h</strong>
-            </div>
-            <div className="px-3.5 py-1.5 rounded-lg bg-[#0D1730] border border-[#1E2D4A] text-slate-300">
-              Est. Budget: <strong className="text-emerald-400 font-mono">${rm.total_cost_usd.toLocaleString()}</strong>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 4-Phase Visual Flow Timeline */}
-      <div className="command-card p-6 space-y-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">
-            <Calendar className="w-4 h-4 text-cyan-400" />
-            <span>4-PHASE MIGRATION TRAJECTORY & RISK REDUCTION SCHEDULE</span>
-          </div>
-          <span className="text-[10px] font-mono text-slate-400">
-            Total {assets.length} Cryptographic Assets Scheduled
-          </span>
-        </div>
-
-        {/* 4 Phase Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {phaseDefinitions.map((phaseDef, idx) => {
-            const phaseData = rm?.phases?.find(p => p.phase_type === phaseDef.id);
-            const isSelected = selectedPhase === phaseDef.id;
-            const assetCount = assets.filter(a => a.migration_phase === phaseDef.id).length;
-
-            return (
-              <div
-                key={phaseDef.id}
-                onClick={() => setSelectedPhase(isSelected ? 'ALL' : phaseDef.id)}
-                className={`p-5 rounded-xl border cursor-pointer transition-all duration-200 bg-[#050A14] ${
-                  isSelected
-                    ? 'border-cyan-400 ring-2 ring-cyan-400/30 shadow-cyan-glow'
-                    : 'border-[#1E2D4A] hover:border-slate-500'
-                } space-y-3 font-mono text-xs`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">
-                    {phaseDef.window}
-                  </span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getPhaseBadge(phaseDef.id)}`}>
-                    {assetCount} Assets
-                  </span>
-                </div>
-
-                <div className="space-y-1">
-                  <h3 className="font-bold text-sm text-white">{phaseDef.title}</h3>
-                  <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed font-sans">
-                    {phaseDef.subtitle}
-                  </p>
-                </div>
-
-                <div className="pt-2 border-t border-[#1E2D4A] flex items-center justify-between text-[11px] text-slate-300">
-                  <span className="text-emerald-400 font-bold">{phaseDef.riskCut}</span>
-                  <span>Cost: <strong className="text-white">${phaseData?.total_cost_usd?.toLocaleString() || '3,200'}</strong></span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* SIGNATURE VISUALIZATION 2: PQC MIGRATION JOURNEY */}
+      <PQCMigrationJourneyVisualizer 
+        visualData={migrationJourneyData}
+        assets={assets}
+        onSelectAsset={onSelectAsset}
+      />
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-xl command-card">
@@ -320,13 +210,15 @@ export default function MigrationRoadmap({ cbomReport, onSelectAsset }) {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => onSelectAsset(asset)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0D1730] hover:bg-cyan-500/20 text-cyan-400 border border-[#1E2D4A] hover:border-cyan-500/50 transition flex items-center gap-1.5 flex-shrink-0"
-                  >
-                    <span>Inspect</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-cyan-400" />
-                  </button>
+                  {onSelectAsset && (
+                    <button
+                      onClick={() => onSelectAsset(asset)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0D1730] hover:bg-cyan-500/20 text-cyan-400 border border-[#1E2D4A] hover:border-cyan-500/50 transition flex items-center gap-1.5 flex-shrink-0"
+                    >
+                      <span>Inspect</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-cyan-400" />
+                    </button>
+                  )}
                 </div>
 
               </div>
